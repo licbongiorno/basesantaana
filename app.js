@@ -16,8 +16,34 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Guardaremos los perfiles aquí para abrirlos en el modal
 window.directorioData = {};
+
+// ==========================================
+// FUNCIÓN INTELIGENTE DE ENLACES
+// ==========================================
+function formatearEnlace(url, plataforma) {
+    if (!url) return '';
+    let enlace = url.trim();
+    
+    // Si ya es un enlace completo y correcto, lo devolvemos
+    if (enlace.startsWith('http://') || enlace.startsWith('https://')) {
+        return enlace;
+    }
+    
+    // Si no, lo construimos basados en la plataforma
+    if (plataforma === 'facebook') {
+        if (enlace.includes('facebook.com')) return 'https://' + enlace;
+        return 'https://www.facebook.com/' + enlace;
+    }
+    
+    if (plataforma === 'instagram') {
+        if (enlace.includes('instagram.com')) return 'https://' + enlace;
+        enlace = enlace.replace('@', ''); // Limpiamos la @ si la pusieron
+        return 'https://www.instagram.com/' + enlace;
+    }
+    
+    return enlace;
+}
 
 // ==========================================
 // MODO OSCURO (Dark Mode)
@@ -220,13 +246,12 @@ window.abrirModal = function(id) {
     if (data.instagram || data.facebook) {
         redesHTML += `<div class="redes-sociales" style="margin-top: 1.5rem;">`;
         if (data.instagram) {
-            let igUser = data.instagram.replace('@','').replace(/\/$/, '').split('/').pop();
-            redesHTML += `<a href="https://instagram.com/${igUser}" target="_blank" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
+            let igLink = formatearEnlace(data.instagram, 'instagram');
+            redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
         }
         if (data.facebook) {
-            // Lógica para Facebook igual a Instagram
-            let fbUser = data.facebook.replace(/\/$/, '').split('/').pop();
-            redesHTML += `<a href="https://www.facebook.com/${fbUser}" target="_blank" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
+            let fbLink = formatearEnlace(data.facebook, 'facebook');
+            redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
         }
         redesHTML += `</div>`;
     }
@@ -248,7 +273,7 @@ window.abrirModal = function(id) {
         
         ${redesHTML}
         
-        <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button-large pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
+        <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
             📲 Enviar WhatsApp
         </a>
     `;
@@ -285,7 +310,7 @@ async function cargarServicios() {
     try {
         const querySnapshot = await getDocs(collection(db, "servicios"));
         listaServicios.innerHTML = ""; 
-        window.directorioData = {}; // Reiniciar data local
+        window.directorioData = {}; 
         
         const cantidad = querySnapshot.size;
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
@@ -298,7 +323,7 @@ async function cargarServicios() {
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            window.directorioData[docSnap.id] = data; // Guardar para el modal
+            window.directorioData[docSnap.id] = data; 
             
             const waNumero = data.whatsapp.replace(/\D/g,''); 
             
@@ -310,12 +335,12 @@ async function cargarServicios() {
             if (data.instagram || data.facebook) {
                 redesHTML += `<div class="redes-sociales">`;
                 if (data.instagram) {
-                    let igUser = data.instagram.replace('@','').replace(/\/$/, '').split('/').pop();
-                    redesHTML += `<a href="https://instagram.com/${igUser}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
+                    let igLink = formatearEnlace(data.instagram, 'instagram');
+                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
                 }
                 if (data.facebook) {
-                    let fbUser = data.facebook.replace(/\/$/, '').split('/').pop();
-                    redesHTML += `<a href="https://www.facebook.com/${fbUser}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
+                    let fbLink = formatearEnlace(data.facebook, 'facebook');
+                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
                 }
                 redesHTML += `</div>`;
             }
@@ -323,10 +348,8 @@ async function cargarServicios() {
             const esOnline = data.ubicacion.includes('Online') ? 'true' : 'false';
             const esDomicilio = data.ubicacion.includes('domicilio') ? 'true' : 'false';
 
-            // SVG del ícono clásico de compartir en Android
             const shareIcon = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
 
-            // La tarjeta entera es clickeable ahora
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up" 
                          style="animation-delay: ${delayAnimacion}s;"
