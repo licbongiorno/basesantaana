@@ -28,8 +28,23 @@
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 120px; overflow-x: hidden; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+
+/* NUEVA ESTRUCTURA PARA EL FOOTER (Flexbox) */
+body { 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+    overflow-x: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 100vh; /* Ocupa al menos toda la pantalla */
+}
+
+/* El contenido principal empuja al footer hacia abajo */
+main.container { 
+    flex: 1; 
+    width: 100%;
+}
 
 /* Sticky Header */
 .header { 
@@ -45,7 +60,15 @@ body { background-color: var(--bg-color); color: var(--text-color); padding-bott
     box-shadow: var(--shadow-md);
 }
 
-.header-top { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; margin-bottom: 1rem; }
+/* Botones movidos a la derecha */
+.header-top { 
+    display: flex; 
+    justify-content: flex-end; 
+    align-items: center; 
+    gap: 1rem; 
+    max-width: 1100px; 
+    margin: 0 auto 1rem auto; 
+}
 .btn-icon { background: rgba(255,255,255,0.2); border: none; font-size: 1.2rem; cursor: pointer; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 .btn-publicar { background-color: transparent; border: 2px solid #fff; color: #fff; padding: 0.5rem 1rem; border-radius: 12px; cursor: pointer; font-weight: 600; }
 .btn-publicar:hover { background-color: rgba(255,255,255,0.1); }
@@ -104,7 +127,8 @@ body { background-color: var(--bg-color); color: var(--text-color); padding-bott
     padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: block; border: none; cursor: pointer; box-shadow: var(--shadow-sm); 
 }
 .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05);}
-.btn-sugerencias { position: fixed; bottom: 20px; right: 20px; background-color: var(--text-color); color: var(--bg-color); border-radius: 30px; padding: 12px 24px; text-decoration: none; font-weight: bold; z-index: 1000; box-shadow: var(--shadow-lg); border: 2px solid rgba(255,255,255,0.1);}
+.btn-sugerencias { position: fixed; bottom: 20px; left: 20px; background-color: var(--text-color); color: var(--bg-color); border-radius: 30px; padding: 12px 24px; text-decoration: none; font-weight: bold; z-index: 1000; box-shadow: var(--shadow-lg); border: 2px solid rgba(255,255,255,0.1);}
+/* Nota: moví el botón a la izquierda (left: 20px) para que no moleste en celulares, puedes cambiarlo a right si prefieres */
 
 /* Formularios */
 .form-container { max-width: 650px; margin: 0 auto; }
@@ -132,8 +156,16 @@ body { background-color: var(--bg-color); color: var(--text-color); padding-bott
 
 /* SKELETON LOADING */
 .skeleton { background: var(--input-bg); border-radius: 20px; padding: 1.8rem; height: 350px; border-top: 5px solid var(--border-color); position: relative; overflow: hidden; }
-.skeleton::after { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer 1.5s infinite; }
+.skeleton::after { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: shimmer 1.5s infinite; }
 @keyframes shimmer { 100% { left: 100%; } }
 
-/* Footer */
-.footer { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.9rem; margin-top: 3rem; border-top: 1px solid var(--border-color); background: var(--card-bg); position: absolute; bottom: 0; width: 100%;}
+/* FOOTER NUEVO (Natural al final del documento) */
+.footer { 
+    text-align: center; 
+    padding: 1.5rem 1rem; 
+    color: var(--text-muted); 
+    font-size: 0.9rem; 
+    border-top: 1px solid var(--border-color); 
+    background: var(--card-bg); 
+    width: 100%;
+}
