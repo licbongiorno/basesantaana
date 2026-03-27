@@ -16,6 +16,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+// Guardaremos los perfiles aquí para abrirlos en el modal
+window.directorioData = {};
+
 // ==========================================
 // MODO OSCURO (Dark Mode)
 // ==========================================
@@ -183,7 +186,7 @@ document.getElementById('form-servicio').addEventListener('submit', async (e) =>
 });
 
 // ==========================================
-// COMPARTIR PERFIL
+// COMPARTIR PERFIL (Ícono Android)
 // ==========================================
 window.compartirPerfil = function(nombre, categoria) {
     if (navigator.share) {
@@ -196,6 +199,76 @@ window.compartirPerfil = function(nombre, categoria) {
         alert("Para compartir, copia la dirección web de esta página.");
     }
 };
+
+// ==========================================
+// VENTANA MODAL (Perfil Completo)
+// ==========================================
+const modalPerfil = document.getElementById('modal-perfil');
+const modalBody = document.getElementById('modal-body');
+
+window.abrirModal = function(id) {
+    const data = window.directorioData[id];
+    if(!data) return;
+
+    const waNumero = data.whatsapp.replace(/\D/g,'');
+    
+    let badgesHTML = "";
+    if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 URGENCIAS 24H</span>`;
+    if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 PRESUPUESTO SIN CARGO</span>`;
+
+    let redesHTML = "";
+    if (data.instagram || data.facebook) {
+        redesHTML += `<div class="redes-sociales" style="margin-top: 1.5rem;">`;
+        if (data.instagram) {
+            let igUser = data.instagram.replace('@','').replace(/\/$/, '').split('/').pop();
+            redesHTML += `<a href="https://instagram.com/${igUser}" target="_blank" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
+        }
+        if (data.facebook) {
+            // Lógica para Facebook igual a Instagram
+            let fbUser = data.facebook.replace(/\/$/, '').split('/').pop();
+            redesHTML += `<a href="https://www.facebook.com/${fbUser}" target="_blank" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
+        }
+        redesHTML += `</div>`;
+    }
+
+    // Inyectar HTML en el modal
+    modalBody.innerHTML = `
+        <div class="categoria-tag" style="margin-bottom: 1rem; display: inline-block;">${data.categoria}</div>
+        <h2 style="font-size: 1.6rem; margin-bottom: 0.8rem; color: var(--text-color);">${data.nombre}</h2>
+        ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
+        
+        <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+            <h4 style="margin-bottom: 0.8rem; color: var(--primary-color);">Sobre el servicio</h4>
+            <p style="color: var(--text-color); line-height: 1.6; white-space: pre-line;">${data.descripcion}</p>
+        </div>
+        
+        <div class="info-extra" style="font-size: 1rem; border: none; padding: 0;">
+            <p style="margin-bottom: 0.5rem;"><strong>📍 Modalidad:</strong> ${data.ubicacion || 'Consultar'}</p>
+        </div>
+        
+        ${redesHTML}
+        
+        <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button-large pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
+            📲 Enviar WhatsApp
+        </a>
+    `;
+
+    modalPerfil.style.display = 'flex';
+    void modalPerfil.offsetWidth; // Forzar reflow para la animación
+    modalPerfil.classList.add('active');
+    document.body.classList.add('modal-open');
+};
+
+document.getElementById('btn-cerrar-modal').addEventListener('click', cerrarModalPerfil);
+modalPerfil.addEventListener('click', (e) => {
+    if(e.target === modalPerfil) cerrarModalPerfil();
+});
+
+function cerrarModalPerfil() {
+    modalPerfil.classList.remove('active');
+    document.body.classList.remove('modal-open');
+    setTimeout(() => { modalPerfil.style.display = 'none'; }, 300);
+}
 
 // ==========================================
 // DIRECTORIO, BUSCADOR Y FILTROS
@@ -212,6 +285,7 @@ async function cargarServicios() {
     try {
         const querySnapshot = await getDocs(collection(db, "servicios"));
         listaServicios.innerHTML = ""; 
+        window.directorioData = {}; // Reiniciar data local
         
         const cantidad = querySnapshot.size;
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
@@ -224,6 +298,8 @@ async function cargarServicios() {
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            window.directorioData[docSnap.id] = data; // Guardar para el modal
+            
             const waNumero = data.whatsapp.replace(/\D/g,''); 
             
             let badgesHTML = "";
@@ -234,12 +310,12 @@ async function cargarServicios() {
             if (data.instagram || data.facebook) {
                 redesHTML += `<div class="redes-sociales">`;
                 if (data.instagram) {
-                    let igLink = data.instagram.includes('http') ? data.instagram : `https://instagram.com/${data.instagram.replace('@','')}`;
-                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig">Instagram</a>`;
+                    let igUser = data.instagram.replace('@','').replace(/\/$/, '').split('/').pop();
+                    redesHTML += `<a href="https://instagram.com/${igUser}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
                 }
                 if (data.facebook) {
-                    let fbLink = data.facebook.includes('http') ? data.facebook : `https://${data.facebook}`;
-                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb">Facebook</a>`;
+                    let fbUser = data.facebook.replace(/\/$/, '').split('/').pop();
+                    redesHTML += `<a href="https://www.facebook.com/${fbUser}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
                 }
                 redesHTML += `</div>`;
             }
@@ -247,16 +323,23 @@ async function cargarServicios() {
             const esOnline = data.ubicacion.includes('Online') ? 'true' : 'false';
             const esDomicilio = data.ubicacion.includes('domicilio') ? 'true' : 'false';
 
+            // SVG del ícono clásico de compartir en Android
+            const shareIcon = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
+
+            // La tarjeta entera es clickeable ahora
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up" 
                          style="animation-delay: ${delayAnimacion}s;"
+                         onclick="abrirModal('${docSnap.id}')"
                          data-urgencias="${data.urgencias || false}"
                          data-online="${esOnline}"
                          data-domicilio="${esDomicilio}">
                     
                     <div class="card-header">
                         <div class="categoria-tag">${data.categoria}</div>
-                        <button class="btn-share" onclick="compartirPerfil('${data.nombre}', '${data.categoria}')" title="Compartir Perfil">🔗</button>
+                        <button class="btn-share" onclick="event.stopPropagation(); compartirPerfil('${data.nombre}', '${data.categoria}')" title="Compartir Perfil">
+                            ${shareIcon}
+                        </button>
                     </div>
                     
                     <h2>${data.nombre}</h2>
@@ -268,7 +351,7 @@ async function cargarServicios() {
                     </div>
                     
                     ${redesHTML}
-                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio" target="_blank" class="btn-whatsapp pulse-subtle">
+                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio" target="_blank" class="btn-whatsapp pulse-subtle" onclick="event.stopPropagation();">
                         Contactar
                     </a>
                 </article>
