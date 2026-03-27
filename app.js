@@ -18,30 +18,19 @@ const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
 
-// ==========================================
-// FUNCIÓN INTELIGENTE DE ENLACES
-// ==========================================
 function formatearEnlace(url, plataforma) {
     if (!url) return '';
     let enlace = url.trim();
-    
-    // Si ya es un enlace completo y correcto, lo devolvemos
-    if (enlace.startsWith('http://') || enlace.startsWith('https://')) {
-        return enlace;
-    }
-    
-    // Si no, lo construimos basados en la plataforma
+    if (enlace.startsWith('http://') || enlace.startsWith('https://')) return enlace;
     if (plataforma === 'facebook') {
         if (enlace.includes('facebook.com')) return 'https://' + enlace;
         return 'https://www.facebook.com/' + enlace;
     }
-    
     if (plataforma === 'instagram') {
         if (enlace.includes('instagram.com')) return 'https://' + enlace;
-        enlace = enlace.replace('@', ''); // Limpiamos la @ si la pusieron
+        enlace = enlace.replace('@', '');
         return 'https://www.instagram.com/' + enlace;
     }
-    
     return enlace;
 }
 
@@ -76,11 +65,14 @@ const vistaPanel = document.getElementById('vista-panel');
 const btnNavPanel = document.getElementById('btn-nav-panel');
 const btnVolverDirectorio = document.getElementById('btn-volver-directorio');
 
-btnNavPanel.addEventListener('click', () => {
+// Función centralizada para abrir el panel de gestión
+window.abrirPanelGestion = function() {
     vistaDirectorio.style.display = 'none';
     vistaPanel.style.display = 'block';
     window.scrollTo(0,0);
-});
+}
+
+btnNavPanel.addEventListener('click', abrirPanelGestion);
 
 btnVolverDirectorio.addEventListener('click', () => {
     vistaPanel.style.display = 'none';
@@ -212,7 +204,7 @@ document.getElementById('form-servicio').addEventListener('submit', async (e) =>
 });
 
 // ==========================================
-// COMPARTIR PERFIL (Ícono Android)
+// COMPARTIR PERFIL
 // ==========================================
 window.compartirPerfil = function(nombre, categoria) {
     if (navigator.share) {
@@ -256,7 +248,6 @@ window.abrirModal = function(id) {
         redesHTML += `</div>`;
     }
 
-    // Inyectar HTML en el modal
     modalBody.innerHTML = `
         <div class="categoria-tag" style="margin-bottom: 1rem; display: inline-block;">${data.categoria}</div>
         <h2 style="font-size: 1.6rem; margin-bottom: 0.8rem; color: var(--text-color);">${data.nombre}</h2>
@@ -273,13 +264,13 @@ window.abrirModal = function(id) {
         
         ${redesHTML}
         
-        <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
+        <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button-large pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
             📲 Enviar WhatsApp
         </a>
     `;
 
     modalPerfil.style.display = 'flex';
-    void modalPerfil.offsetWidth; // Forzar reflow para la animación
+    void modalPerfil.offsetWidth; 
     modalPerfil.classList.add('active');
     document.body.classList.add('modal-open');
 };
@@ -315,11 +306,30 @@ async function cargarServicios() {
         const cantidad = querySnapshot.size;
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
 
-        if (querySnapshot.empty) {
-            listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Aún no hay servicios publicados. ¡Sé el primero!</p>"; return;
-        }
+        // === PASO 2 CENTRAL DE UX: LA TARJETA DE INVITACIÓN SIEMPRE PRIMERO ===
+        // SVG del ícono 'Más' profesional
+        const plusIcon = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
 
-        let delayAnimacion = 0; 
+        const tarjetaCtaHTML = `
+            <article class="tarjeta-servicio tarjeta-cta-unirse fade-in-up professional-card" 
+                     onclick="event.stopPropagation(); abrirPanelGestion();">
+                <div class="centrado" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">➕</span>
+                    <h2 style="font-size: 1.25rem; color: var(--text-color); margin-bottom: 0.5rem; text-align: center;">¿Ofreces un servicio en Santa Ana?</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center;">
+                        Plomeros, docentes, electricistas... ¡Sumate al directorio gratis y hacete ver por tus vecinos!
+                    </p>
+                    <button class="btn-whatsapp rounded-button-large pulse-subtle" style="background: var(--primary-color); width: auto; display:inline-block; padding: 10px 20px;">Sumarme Ahora Gratis</button>
+                </div>
+            </article>
+        `;
+        // Insertamos la invitación primero
+        listaServicios.innerHTML += tarjetaCtaHTML;
+
+        // Si no hay servicios, solo queda la invitación
+        if (querySnapshot.empty) { return; }
+
+        let delayAnimacion = 0.1; // Empezamos después de la invitación
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
@@ -391,6 +401,9 @@ function aplicarFiltros() {
     const tarjetas = document.querySelectorAll('.tarjeta-servicio');
 
     tarjetas.forEach(tarjeta => {
+        // Ignorar la tarjeta de invitación en la búsqueda
+        if(tarjeta.classList.contains('tarjeta-cta-unirse')) return;
+
         const contenido = tarjeta.innerText.toLowerCase();
         const coincideTexto = contenido.includes(textoBusqueda);
         
