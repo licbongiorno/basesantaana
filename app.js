@@ -22,7 +22,6 @@ const provider = new GoogleAuthProvider();
 const btnTheme = document.getElementById('btn-theme-toggle');
 const body = document.body;
 
-// Revisar preferencia guardada
 if (localStorage.getItem('theme') === 'dark') {
     body.setAttribute('data-theme', 'dark');
     btnTheme.innerText = '☀️';
@@ -184,7 +183,7 @@ document.getElementById('form-servicio').addEventListener('submit', async (e) =>
 });
 
 // ==========================================
-// COMPARTIR PERFIL (Web Share API)
+// COMPARTIR PERFIL
 // ==========================================
 window.compartirPerfil = function(nombre, categoria) {
     if (navigator.share) {
@@ -203,10 +202,9 @@ window.compartirPerfil = function(nombre, categoria) {
 // ==========================================
 const listaServicios = document.getElementById('lista-servicios');
 const contadorTexto = document.getElementById('contador-profesionales');
-let filtroActivo = ""; // urgencias, online, domicilio
+let filtroActivo = ""; 
 
 async function cargarServicios() {
-    // 1. Mostrar Skeletons
     listaServicios.innerHTML = `
         <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
     `;
@@ -215,7 +213,6 @@ async function cargarServicios() {
         const querySnapshot = await getDocs(collection(db, "servicios"));
         listaServicios.innerHTML = ""; 
         
-        // 2. Actualizar Contador Dinámico
         const cantidad = querySnapshot.size;
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
 
@@ -223,7 +220,7 @@ async function cargarServicios() {
             listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Aún no hay servicios publicados. ¡Sé el primero!</p>"; return;
         }
 
-        let delayAnimacion = 0; // Para el efecto escalonado
+        let delayAnimacion = 0; 
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
@@ -247,7 +244,6 @@ async function cargarServicios() {
                 redesHTML += `</div>`;
             }
 
-            // Datos invisibles para ayudar a los filtros lógicos
             const esOnline = data.ubicacion.includes('Online') ? 'true' : 'false';
             const esDomicilio = data.ubicacion.includes('domicilio') ? 'true' : 'false';
 
@@ -278,13 +274,12 @@ async function cargarServicios() {
                 </article>
             `;
             listaServicios.innerHTML += tarjetaHTML;
-            delayAnimacion += 0.1; // Siguiente tarjeta aparece 0.1s más tarde
+            delayAnimacion += 0.1; 
         });
 
     } catch (error) { listaServicios.innerHTML = "<p style='color: red;'>Error de conexión.</p>"; }
 }
 
-// Lógica del Buscador + Filtros combinados
 function aplicarFiltros() {
     const textoBusqueda = document.getElementById('buscador').value.toLowerCase();
     const tarjetas = document.querySelectorAll('.tarjeta-servicio');
@@ -306,7 +301,6 @@ document.getElementById('buscador').addEventListener('input', aplicarFiltros);
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        // Toggle botón visualmente
         if (btn.classList.contains('active')) {
             btn.classList.remove('active');
             filtroActivo = "";
