@@ -18,31 +18,19 @@ const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
 
-// ==========================================
-// FUNCIÓN INTELIGENTE DE ENLACES (Corregida)
-// ==========================================
 function formatearEnlace(url, plataforma) {
     if (!url) return '';
     let enlace = url.trim();
-    
-    // Si ya es un enlace completo y correcto, lo devolvemos
-    if (enlace.startsWith('http://') || enlace.startsWith('https://')) {
-        return enlace;
-    }
-    
-    // Si no, lo construimos basados en la plataforma
+    if (enlace.startsWith('http://') || enlace.startsWith('https://')) return enlace;
     if (plataforma === 'facebook') {
-        // CORRECCIÓN: Acepta tanto el usuario solo como si pusieron facebook.com/...
         if (enlace.includes('facebook.com')) return 'https://' + enlace;
         return 'https://www.facebook.com/' + enlace;
     }
-    
     if (plataforma === 'instagram') {
         if (enlace.includes('instagram.com')) return 'https://' + enlace;
-        enlace = enlace.replace('@', ''); // Limpiamos la @ si la pusieron
+        enlace = enlace.replace('@', '');
         return 'https://www.instagram.com/' + enlace;
     }
-    
     return enlace;
 }
 
@@ -77,7 +65,6 @@ const vistaPanel = document.getElementById('vista-panel');
 const btnNavPanel = document.getElementById('btn-nav-panel');
 const btnVolverDirectorio = document.getElementById('btn-volver-directorio');
 
-// Función centralizada para abrir el panel de gestión
 window.abrirPanelGestion = function() {
     vistaDirectorio.style.display = 'none';
     vistaPanel.style.display = 'block';
@@ -103,13 +90,13 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioActual = user;
         document.getElementById('seccion-login').style.display = 'none';
-        btnLogout.style.display = 'inline-block'; // Mostrar botón Cerrar Sesión
+        btnLogout.style.display = 'inline-block'; 
         mostrarDashboard();
     } else {
         document.getElementById('seccion-login').style.display = 'flex';
         document.getElementById('seccion-dashboard').style.display = 'none';
         document.getElementById('seccion-formulario').style.display = 'none';
-        btnLogout.style.display = 'none'; // Ocultar botón Cerrar Sesión
+        btnLogout.style.display = 'none'; 
         usuarioActual = null;
     }
 });
@@ -118,13 +105,12 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     try { await signInWithPopup(auth, provider); } catch (e) { alert("Error al iniciar sesión."); }
 });
 
-// LÓGICA DE CERRAR SESIÓN
 btnLogout.addEventListener('click', async () => {
     if(confirm("¿Seguro que deseas cerrar sesión?")) {
         try {
             await signOut(auth);
             alert("Sesión cerrada correctamente.");
-            document.getElementById('btn-volver-directorio').click(); // Volver al inicio
+            document.getElementById('btn-volver-directorio').click(); 
         } catch (error) { alert("Error al cerrar sesión."); }
     }
 });
@@ -256,7 +242,11 @@ window.abrirModal = function(id) {
 
     const waNumero = data.whatsapp.replace(/\D/g,'');
     
+    // Si es destacada, mostramos la etiqueta en el popup también
+    const esDestacado = data.nombre.toLowerCase().includes('nathalia andrada');
+    
     let badgesHTML = "";
+    if(esDestacado) badgesHTML += `<span class="badge" style="background:#fef08a; color:#854d0e; border: 1px solid #fde047;">⭐ DESTACADO</span>`;
     if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 URGENCIAS 24H</span>`;
     if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 PRESUPUESTO SIN CARGO</span>`;
 
@@ -268,7 +258,6 @@ window.abrirModal = function(id) {
             redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
         }
         if (data.facebook) {
-            // CORRECCIÓN INTELIGENTE DE ENLACE FACEBOOK
             let fbLink = formatearEnlace(data.facebook, 'facebook');
             redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
         }
@@ -333,7 +322,7 @@ async function cargarServicios() {
         const cantidad = querySnapshot.size;
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
 
-        // === PASO 2 CENTRAL DE UX: LA TARJETA DE INVITACIÓN SIEMPRE PRIMERO ===
+        // 1. Inyectamos la invitación primero
         const tarjetaCtaHTML = `
             <article class="tarjeta-servicio tarjeta-cta-unirse fade-in-up professional-card" 
                      onclick="event.stopPropagation(); abrirPanelGestion();">
@@ -352,6 +341,10 @@ async function cargarServicios() {
         if (querySnapshot.empty) { return; }
 
         let delayAnimacion = 0.1; 
+        
+        // Variables para separar destacados de normales
+        let htmlDestacados = "";
+        let htmlNormales = "";
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
@@ -359,7 +352,11 @@ async function cargarServicios() {
             
             const waNumero = data.whatsapp.replace(/\D/g,''); 
             
+            // VERIFICAMOS SI ES NATHALIA (Acepta mayúsculas o minúsculas)
+            const esDestacado = data.nombre.toLowerCase().includes('nathalia andrada');
+            
             let badgesHTML = "";
+            if(esDestacado) badgesHTML += `<span class="badge" style="background:#fef08a; color:#854d0e; border: 1px solid #fde047;">⭐ DESTACADO</span>`;
             if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 24hs</span>`;
             if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 Sin Cargo</span>`;
 
@@ -371,7 +368,6 @@ async function cargarServicios() {
                     redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
                 }
                 if (data.facebook) {
-                    // CORRECCIÓN INTELIGENTE DE ENLACE FACEBOOK
                     let fbLink = formatearEnlace(data.facebook, 'facebook');
                     redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
                 }
@@ -380,11 +376,12 @@ async function cargarServicios() {
 
             const esOnline = data.ubicacion.includes('Online') ? 'true' : 'false';
             const esDomicilio = data.ubicacion.includes('domicilio') ? 'true' : 'false';
+            const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
 
             const shareIcon = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
 
             const tarjetaHTML = `
-                <article class="tarjeta-servicio fade-in-up" 
+                <article class="tarjeta-servicio fade-in-up ${claseAdicional}" 
                          style="animation-delay: ${delayAnimacion}s;"
                          onclick="abrirModal('${docSnap.id}')"
                          data-urgencias="${data.urgencias || false}"
@@ -412,9 +409,19 @@ async function cargarServicios() {
                     </a>
                 </article>
             `;
-            listaServicios.innerHTML += tarjetaHTML;
+            
+            // Separamos la tarjeta según si es destacada o no
+            if (esDestacado) {
+                htmlDestacados += tarjetaHTML;
+            } else {
+                htmlNormales += tarjetaHTML;
+            }
+            
             delayAnimacion += 0.1; 
         });
+        
+        // 2. Inyectamos los destacados justo después de la invitación, y luego los normales
+        listaServicios.innerHTML += htmlDestacados + htmlNormales;
 
     } catch (error) { listaServicios.innerHTML = "<p style='color: red;'>Error de conexión.</p>"; }
 }
