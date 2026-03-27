@@ -1,95 +1,57 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Autogestión</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
+:root {
+    --color-fondo: #f4f6f8;
+    --color-texto: #333333;
+    --color-primario: #2563eb;
+    --color-whatsapp: #25d366;
+    --color-blanco: #ffffff;
+    --radio-borde: 12px;
+}
 
-    <header class="header">
-        <div class="header-content">
-            <h1>Panel de Autogestión</h1>
-            <p>Publica, edita o elimina tu servicio</p>
-        </div>
-        <a href="index.html" class="btn-publicar">Volver al inicio</a>
-    </header>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background-color: var(--color-fondo); color: var(--color-texto); padding-bottom: 80px; }
 
-    <main class="container form-container">
-        
-        <div id="seccion-login" class="tarjeta-servicio centrado">
-            <h2>Ingresa para gestionar tu perfil</h2>
-            <p class="descripcion" style="margin-bottom: 2rem;">
-                Utiliza tu cuenta de Google para verificar tu identidad de forma segura.
-            </p>
-            <button id="btn-login" class="btn-whatsapp" style="background-color: #4285F4;">
-                Continuar con Google
-            </button>
-        </div>
+/* Encabezado */
+.header { background-color: var(--color-primario); color: var(--color-blanco); padding: 2rem 1rem; text-align: center; position: relative; }
+.header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.search-box { margin-top: 1.5rem; }
+.search-box input { width: 100%; max-width: 500px; padding: 1rem; border-radius: 8px; border: none; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.btn-publicar { position: absolute; top: 1rem; right: 1rem; background-color: transparent; border: 1px solid var(--color-blanco); color: var(--color-blanco); padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 600; }
 
-        <div id="seccion-formulario" class="tarjeta-servicio" style="display: none;">
-            <h2>Datos de tu Servicio</h2>
-            
-            <form id="form-servicio" class="formulario-estilizado">
-                
-                <div class="grupo-input">
-                    <label for="nombre">Nombre del Negocio o Profesional *</label>
-                    <input type="text" id="nombre" required placeholder="Ej. Juan Pérez - Jardinería">
-                </div>
+/* Contenedor y Tarjetas */
+.container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+.grid-servicios { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 
-                <div class="grupo-input">
-                    <label for="categoria">Categoría *</label>
-                    <select id="categoria" required>
-                        <option value="">Selecciona un rubro...</option>
-                        <option value="Salud Mental y Psicología">Salud Mental y Psicología</option>
-                        <option value="Salud y Médicos">Salud y Médicos</option>
-                        <option value="Educación y Clases">Educación y Clases</option>
-                        <option value="Deportes y Artes Marciales">Deportes y Artes Marciales</option>
-                        <option value="Estética y Belleza">Estética y Belleza</option>
-                        <option value="Mantenimiento y Oficios">Mantenimiento y Oficios</option>
-                        <option value="Otros">Otros Servicios</option>
-                    </select>
-                </div>
+.tarjeta-servicio { background: var(--color-blanco); border-radius: var(--radio-borde); padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+.categoria-tag { background-color: #e0e7ff; color: var(--color-primario); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; align-self: flex-start; margin-bottom: 0.8rem; }
+.tarjeta-servicio h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.descripcion { font-size: 0.9rem; color: #555; margin-bottom: 1rem; flex-grow: 1; }
 
-                <div class="grupo-input">
-                    <label for="whatsapp">WhatsApp de Contacto *</label>
-                    <input type="number" id="whatsapp" required placeholder="Ej. 3510000000">
-                </div>
+/* Gatillos visuales (Badges) */
+.badges-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.badge { font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.6rem; border-radius: 6px; }
+.badge-red { background-color: #fee2e2; color: #dc2626; }
+.badge-blue { background-color: #e0f2fe; color: #0284c7; }
+.badge-green { background-color: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
 
-                <div class="grupo-input">
-                    <label for="instagram">Usuario de Instagram (Opcional)</label>
-                    <input type="text" id="instagram" placeholder="Ej. tu_usuario (sin el @)">
-                </div>
+.info-extra { font-size: 0.85rem; margin-bottom: 1rem; color: #666; font-weight: 600; display: flex; flex-direction: column; gap: 0.3rem; }
 
-                <div class="grupo-input">
-                    <label for="facebook">Enlace de Facebook (Opcional)</label>
-                    <input type="text" id="facebook" placeholder="Ej. facebook.com/tu_pagina">
-                </div>
+/* Botones y Redes */
+.redes-sociales { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.btn-social { padding: 0.4rem 0.8rem; border-radius: 6px; text-decoration: none; color: white; font-size: 0.8rem; font-weight: 600; }
+.btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+.btn-fb { background: #1877f2; }
+.btn-whatsapp { background-color: var(--color-whatsapp); color: var(--color-blanco); text-align: center; padding: 0.8rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: block; border: none; cursor: pointer; }
 
-                <div class="grupo-input">
-                    <label for="descripcion">Breve Descripción *</label>
-                    <textarea id="descripcion" rows="4" required placeholder="Describe tu propuesta (Máx 200 caracteres)"></textarea>
-                </div>
+.btn-sugerencias { position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; padding: 12px 20px; border-radius: 50px; text-decoration: none; font-weight: bold; z-index: 1000; }
 
-                <div class="grupo-input check-input">
-                    <input type="checkbox" id="domicilio">
-                    <label for="domicilio">¿Ofreces servicio a domicilio?</label>
-                </div>
+/* Formulario */
+.form-container { max-width: 600px; }
+.centrado { text-align: center; align-items: center; }
+.formulario-estilizado { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
+.grupo-input { display: flex; flex-direction: column; gap: 0.4rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+.grupo-input label { font-weight: 600; font-size: 0.9rem; }
+.grupo-input input[type="text"], .grupo-input input[type="number"], .grupo-input select, .grupo-input textarea { padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+.check-input { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
+.check-input input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
 
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button type="submit" id="btn-guardar" class="btn-whatsapp" style="flex: 1;">
-                        Publicar Servicio
-                    </button>
-                    <button type="button" id="btn-eliminar" style="display: none; color: white; background-color: #dc2626; border: none; padding: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        Eliminar Perfil
-                    </button>
-                </div>
-            </form>
-        </div>
-
-    </main>
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+.item-dashboard { display: flex; justify-content: space-between; align-items: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid var(--color-primario); }
