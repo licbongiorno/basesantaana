@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -18,19 +18,31 @@ const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
 
+// ==========================================
+// FUNCIÓN INTELIGENTE DE ENLACES (Corregida)
+// ==========================================
 function formatearEnlace(url, plataforma) {
     if (!url) return '';
     let enlace = url.trim();
-    if (enlace.startsWith('http://') || enlace.startsWith('https://')) return enlace;
+    
+    // Si ya es un enlace completo y correcto, lo devolvemos
+    if (enlace.startsWith('http://') || enlace.startsWith('https://')) {
+        return enlace;
+    }
+    
+    // Si no, lo construimos basados en la plataforma
     if (plataforma === 'facebook') {
+        // CORRECCIÓN: Acepta tanto el usuario solo como si pusieron facebook.com/...
         if (enlace.includes('facebook.com')) return 'https://' + enlace;
         return 'https://www.facebook.com/' + enlace;
     }
+    
     if (plataforma === 'instagram') {
         if (enlace.includes('instagram.com')) return 'https://' + enlace;
-        enlace = enlace.replace('@', '');
+        enlace = enlace.replace('@', ''); // Limpiamos la @ si la pusieron
         return 'https://www.instagram.com/' + enlace;
     }
+    
     return enlace;
 }
 
@@ -81,26 +93,40 @@ btnVolverDirectorio.addEventListener('click', () => {
 });
 
 // ==========================================
-// LÓGICA DEL PANEL DE AUTOGESTIÓN
+// LÓGICA DEL PANEL DE AUTOGESTIÓN Y AUTH
 // ==========================================
 let documentoIdActual = null; 
 let usuarioActual = null;
+const btnLogout = document.getElementById('btn-logout');
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioActual = user;
         document.getElementById('seccion-login').style.display = 'none';
+        btnLogout.style.display = 'inline-block'; // Mostrar botón Cerrar Sesión
         mostrarDashboard();
     } else {
         document.getElementById('seccion-login').style.display = 'flex';
         document.getElementById('seccion-dashboard').style.display = 'none';
         document.getElementById('seccion-formulario').style.display = 'none';
+        btnLogout.style.display = 'none'; // Ocultar botón Cerrar Sesión
         usuarioActual = null;
     }
 });
 
 document.getElementById('btn-login').addEventListener('click', async () => {
     try { await signInWithPopup(auth, provider); } catch (e) { alert("Error al iniciar sesión."); }
+});
+
+// LÓGICA DE CERRAR SESIÓN
+btnLogout.addEventListener('click', async () => {
+    if(confirm("¿Seguro que deseas cerrar sesión?")) {
+        try {
+            await signOut(auth);
+            alert("Sesión cerrada correctamente.");
+            document.getElementById('btn-volver-directorio').click(); // Volver al inicio
+        } catch (error) { alert("Error al cerrar sesión."); }
+    }
 });
 
 async function mostrarDashboard() {
@@ -242,6 +268,7 @@ window.abrirModal = function(id) {
             redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
         }
         if (data.facebook) {
+            // CORRECCIÓN INTELIGENTE DE ENLACE FACEBOOK
             let fbLink = formatearEnlace(data.facebook, 'facebook');
             redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
         }
@@ -307,9 +334,6 @@ async function cargarServicios() {
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
 
         // === PASO 2 CENTRAL DE UX: LA TARJETA DE INVITACIÓN SIEMPRE PRIMERO ===
-        // SVG del ícono 'Más' profesional
-        const plusIcon = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
-
         const tarjetaCtaHTML = `
             <article class="tarjeta-servicio tarjeta-cta-unirse fade-in-up professional-card" 
                      onclick="event.stopPropagation(); abrirPanelGestion();">
@@ -317,19 +341,17 @@ async function cargarServicios() {
                     <span style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">➕</span>
                     <h2 style="font-size: 1.25rem; color: var(--text-color); margin-bottom: 0.5rem; text-align: center;">¿Ofreces un servicio en Santa Ana?</h2>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center;">
-                        Plomeros, docentes, electricistas... ¡Sumate al directorio gratis y hacete ver por tus vecinos!
+                        Plomeros, electricistas, docentes, etc... ¡Sumate al directorio gratis y hacete ver por tus vecinos!
                     </p>
                     <button class="btn-whatsapp rounded-button-large pulse-subtle" style="background: var(--primary-color); width: auto; display:inline-block; padding: 10px 20px;">Sumarme Ahora Gratis</button>
                 </div>
             </article>
         `;
-        // Insertamos la invitación primero
         listaServicios.innerHTML += tarjetaCtaHTML;
 
-        // Si no hay servicios, solo queda la invitación
         if (querySnapshot.empty) { return; }
 
-        let delayAnimacion = 0.1; // Empezamos después de la invitación
+        let delayAnimacion = 0.1; 
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
@@ -349,6 +371,7 @@ async function cargarServicios() {
                     redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
                 }
                 if (data.facebook) {
+                    // CORRECCIÓN INTELIGENTE DE ENLACE FACEBOOK
                     let fbLink = formatearEnlace(data.facebook, 'facebook');
                     redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
                 }
@@ -401,7 +424,6 @@ function aplicarFiltros() {
     const tarjetas = document.querySelectorAll('.tarjeta-servicio');
 
     tarjetas.forEach(tarjeta => {
-        // Ignorar la tarjeta de invitación en la búsqueda
         if(tarjeta.classList.contains('tarjeta-cta-unirse')) return;
 
         const contenido = tarjeta.innerText.toLowerCase();
