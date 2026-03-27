@@ -186,3 +186,15 @@ main.container { flex: 1; width: 100%; }
     text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); 
     font-size: 0.9rem; border-top: 1px solid var(--border-color); background: var(--card-bg); width: 100%;
 }
+/* ==========================================
+   PERFILES DESTACADOS (PREMIUM)
+   ========================================== */
+.tarjeta-destacada {
+    border-top: 5px solid #eab308 !important; /* Borde superior Dorado */
+    background: linear-gradient(180deg, #fefce8 0%, var(--card-bg) 100%);
+    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
+}
+.tarjeta-destacada:hover {
+    border-color: #eab308;
+    box-shadow: 0 10px 20px rgba(234, 179, 8, 0.3);
+}
