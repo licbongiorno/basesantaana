@@ -55,7 +55,6 @@ main.container { flex: 1; width: 100%; }
 .btn-publicar { background-color: transparent; border: 2px solid #fff; color: #fff; padding: 0.5rem 1rem; border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
 .btn-publicar:hover { background-color: rgba(255,255,255,0.1); }
 
-/* Nuevo Botón Sugerencias (Arriba) */
 .btn-sugerencias-header {
     background-color: rgba(255,255,255,0.15); color: #fff; padding: 0.5rem 1rem; border-radius: 12px; 
     text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; 
@@ -92,10 +91,20 @@ main.container { flex: 1; width: 100%; }
 /* Tarjetas */
 .tarjeta-servicio { 
     background: var(--card-bg); border-radius: 20px; padding: 1.8rem; cursor: pointer;
-    box-shadow: var(--shadow-md); display: flex; flex-direction: column; 
+    box-shadow: var(--shadow-sm); display: flex; flex-direction: column; 
     border-top: 5px solid var(--primary-color); border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 .tarjeta-servicio:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-color); }
+
+/* ESTILO DE LA NUEVA TARJETA DE INVITACIÓN (AQUÍ ESTÁ LA MAGIA DE UX) */
+.tarjeta-cta-unirse {
+    border: 2px dashed #cbd5e0; /* Borde punteado diferente */
+    border-top: 5px dashed var(--primary-color); /* Mantenemos el color arriba pero punteado */
+    background: linear-gradient(135deg, var(--card-bg) 0%, #f7fafc 100%);
+    justify-content: center; align-items: center; text-align: center;
+}
+.tarjeta-cta-unirse:hover { border-color: var(--primary-color); }
 
 .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;}
 .categoria-tag { background-color: rgba(2, 119, 189, 0.1); color: var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
@@ -124,6 +133,7 @@ main.container { flex: 1; width: 100%; }
     padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: block; border: none; cursor: pointer; box-shadow: var(--shadow-sm); width: 100%;
 }
 .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05);}
+.btn-sugerencias { position: fixed; bottom: 20px; left: 20px; background-color: var(--text-color); color: var(--bg-color); border-radius: 30px; padding: 12px 24px; text-decoration: none; font-weight: bold; z-index: 1000; box-shadow: var(--shadow-lg); border: 2px solid rgba(255,255,255,0.1);}
 
 /* ESTILOS DEL MODAL */
 .modal-overlay {
@@ -158,6 +168,7 @@ main.container { flex: 1; width: 100%; }
 .check-input { display: flex; align-items: center; gap: 0.8rem; }
 .check-input input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
 
+/* Dashboard Items */
 .item-dashboard { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 1.2rem; border-radius: 12px; border-left: 4px solid var(--primary-color); border: 1px solid var(--border-color); }
 
 /* ANIMACIONES */
