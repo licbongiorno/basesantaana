@@ -17,12 +17,15 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 // ==========================================
-// CONTROL DE VISTAS (SPA)
+// CONTROL DE VISTAS (SPA - Navegación)
 // ==========================================
 const vistaDirectorio = document.getElementById('vista-directorio');
 const vistaPanel = document.getElementById('vista-panel');
 const btnNavPanel = document.getElementById('btn-nav-panel');
 const btnVolverDirectorio = document.getElementById('btn-volver-directorio');
+
+// Keep suggestions always visible and ensure the phone number is correct
+const SUGGESTIONS_NUMBER = "+5493516575261"; // Agregamos el número del Admin aquí
 
 btnNavPanel.addEventListener('click', () => {
     vistaDirectorio.style.display = 'none';
@@ -32,7 +35,7 @@ btnNavPanel.addEventListener('click', () => {
 btnVolverDirectorio.addEventListener('click', () => {
     vistaPanel.style.display = 'none';
     vistaDirectorio.style.display = 'block';
-    cargarServicios(); // Recarga por si se editó algo
+    cargarServicios(); // Recarga vista pública al volver
 });
 
 // ==========================================
@@ -90,20 +93,21 @@ async function mostrarDashboard() {
     });
 }
 
+// Funciones globales para botones dinámicos
 window.editarServicio = async function(id) {
     documentoIdActual = id;
     document.getElementById('seccion-dashboard').style.display = 'none';
     document.getElementById('seccion-formulario').style.display = 'block';
     document.getElementById('titulo-formulario').innerText = "Editar Servicio";
     
-    const q = query(collection(db, "servicios"));
+    const q = query(collection(db, "servicios")); // Búsqueda simplificada para claridad
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((docSnap) => {
         if (docSnap.id === id) {
             const data = docSnap.data();
             document.getElementById('nombre').value = data.nombre || '';
             document.getElementById('categoria').value = data.categoria || '';
-            document.getElementById('ubicacion').value = data.ubicacion || 'A domicilio';
+            document.getElementById('ubicacion').value = data.ubicacion || '100% Online (Virtual)';
             document.getElementById('whatsapp').value = data.whatsapp || '';
             document.getElementById('instagram').value = data.instagram || '';
             document.getElementById('facebook').value = data.facebook || '';
@@ -124,6 +128,10 @@ window.borrarServicio = async function(id) {
 document.getElementById('btn-crear-nuevo').addEventListener('click', () => {
     documentoIdActual = null;
     document.getElementById('form-servicio').reset();
+    // Re-ensure payments are unchecked if previously edited card had them
+    document.getElementById('urgencias').checked = false;
+    document.getElementById('presupuesto').checked = false;
+    
     document.getElementById('seccion-dashboard').style.display = 'none';
     document.getElementById('seccion-formulario').style.display = 'block';
     document.getElementById('titulo-formulario').innerText = "Nuevo Servicio";
@@ -160,67 +168,72 @@ document.getElementById('form-servicio').addEventListener('submit', async (e) =>
 });
 
 // ==========================================
-// LÓGICA DEL DIRECTORIO Y BUSCADOR
+// LÓGICA DEL DIRECTORIO Y BUSCADOR PREDICITVO
 // ==========================================
 const listaServicios = document.getElementById('lista-servicios');
 
 async function cargarServicios() {
-    listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Cargando profesionales...</p>";
+    listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Cargando profesionales de Santa Ana...</p>";
     try {
         const querySnapshot = await getDocs(collection(db, "servicios"));
         listaServicios.innerHTML = ""; 
         if (querySnapshot.empty) {
-            listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Aún no hay servicios publicados. ¡Sé el primero!</p>"; return;
+            listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color:#666;'>Aún no hay servicios publicados en Villa Parque Santa Ana. ¡Sé el primero!</p>"; return;
         }
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const waNumero = data.whatsapp.replace(/\D/g,''); 
             
+            // Construir gatillos de conversión visualmente (badges)
             let badgesHTML = "";
-            if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 Urgencias 24hs</span>`;
-            if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 Presupuesto sin cargo</span>`;
+            if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 URGENCIAS 24H</span>`;
+            if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 PRESUPUESTO SIN CARGO</span>`;
 
+            // Estilizar enlaces de redes como botones redondeados si existen
             let redesHTML = "";
             if (data.instagram || data.facebook) {
                 redesHTML += `<div class="redes-sociales">`;
                 if (data.instagram) {
                     let igLink = data.instagram.includes('http') ? data.instagram : `https://instagram.com/${data.instagram.replace('@','')}`;
-                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig">Instagram</a>`;
+                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig rounded-button">Ver Instagram</a>`;
                 }
                 if (data.facebook) {
                     let fbLink = data.facebook.includes('http') ? data.facebook : `https://${data.facebook}`;
-                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb">Facebook</a>`;
+                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb rounded-button">Ver Facebook</a>`;
                 }
                 redesHTML += `</div>`;
             }
 
             const tarjetaHTML = `
                 <article class="tarjeta-servicio">
-                    <div class="categoria-tag">${data.categoria}</div>
+                    <div class="categoria-tag pill">${data.categoria}</div>
                     <h2>${data.nombre}</h2>
                     ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
                     <p class="descripcion">${data.descripcion}</p>
                     <div class="info-extra">
-                        <span>📍 ${data.ubicacion || 'A convenir'}</span>
+                        <span>📍Modalidad: ${data.ubicacion || 'Consultar'}</span>
                     </div>
                     ${redesHTML}
-                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio" target="_blank" class="btn-whatsapp">
+                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button-large">
                         Contactar por WhatsApp
                     </a>
                 </article>
             `;
             listaServicios.innerHTML += tarjetaHTML;
         });
-    } catch (error) { listaServicios.innerHTML = "<p style='color: red;'>Error de conexión.</p>"; }
+    } catch (error) { listaServicios.innerHTML = "<p style='color: red; grid-column: 1/-1; text-align: center;'>Error de conexión. Intenta recargar la página.</p>"; }
 }
 
+// Buscador predictivo en tiempo real (lado del cliente)
 document.getElementById('buscador').addEventListener('input', (e) => {
     const textoBusqueda = e.target.value.toLowerCase();
     document.querySelectorAll('.tarjeta-servicio').forEach(tarjeta => {
         const contenido = tarjeta.innerText.toLowerCase();
+        // Filtra basado en cualquier contenido de texto en la tarjeta
         tarjeta.style.display = contenido.includes(textoBusqueda) ? 'flex' : 'none';
     });
 });
 
-cargarServicios(); // Cargar al inicio
+// Cargar servicios al inicio del index público
+cargarServicios();
