@@ -17,25 +17,47 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 // ==========================================
-// CONTROL DE VISTAS (SPA - Navegación)
+// MODO OSCURO (Dark Mode)
+// ==========================================
+const btnTheme = document.getElementById('btn-theme-toggle');
+const body = document.body;
+
+// Revisar preferencia guardada
+if (localStorage.getItem('theme') === 'dark') {
+    body.setAttribute('data-theme', 'dark');
+    btnTheme.innerText = '☀️';
+}
+
+btnTheme.addEventListener('click', () => {
+    if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        btnTheme.innerText = '🌙';
+    } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        btnTheme.innerText = '☀️';
+    }
+});
+
+// ==========================================
+// CONTROL DE VISTAS (SPA)
 // ==========================================
 const vistaDirectorio = document.getElementById('vista-directorio');
 const vistaPanel = document.getElementById('vista-panel');
 const btnNavPanel = document.getElementById('btn-nav-panel');
 const btnVolverDirectorio = document.getElementById('btn-volver-directorio');
 
-// Keep suggestions always visible and ensure the phone number is correct
-const SUGGESTIONS_NUMBER = "+5493516575261"; // Agregamos el número del Admin aquí
-
 btnNavPanel.addEventListener('click', () => {
     vistaDirectorio.style.display = 'none';
     vistaPanel.style.display = 'block';
+    window.scrollTo(0,0);
 });
 
 btnVolverDirectorio.addEventListener('click', () => {
     vistaPanel.style.display = 'none';
     vistaDirectorio.style.display = 'block';
-    cargarServicios(); // Recarga vista pública al volver
+    cargarServicios(); 
 });
 
 // ==========================================
@@ -79,35 +101,34 @@ async function mostrarDashboard() {
     querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
         contenedorLista.innerHTML += `
-            <div class="item-dashboard">
+            <div class="item-dashboard fade-in-up">
                 <div>
                     <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${data.nombre}</h3>
-                    <span style="font-size: 0.8rem; color: #666;">${data.categoria}</span>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">${data.categoria}</span>
                 </div>
                 <div style="display:flex; gap:0.5rem;">
-                    <button onclick="editarServicio('${docSnap.id}')" style="background:#2563eb; color:white; border:none; padding:0.5rem; border-radius:6px; cursor:pointer;">Editar</button>
-                    <button onclick="borrarServicio('${docSnap.id}')" style="background:#dc2626; color:white; border:none; padding:0.5rem; border-radius:6px; cursor:pointer;">Borrar</button>
+                    <button onclick="editarServicio('${docSnap.id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem; border-radius:8px; cursor:pointer;">Editar</button>
+                    <button onclick="borrarServicio('${docSnap.id}')" style="background:#dc2626; color:white; border:none; padding:0.5rem; border-radius:8px; cursor:pointer;">Borrar</button>
                 </div>
             </div>
         `;
     });
 }
 
-// Funciones globales para botones dinámicos
 window.editarServicio = async function(id) {
     documentoIdActual = id;
     document.getElementById('seccion-dashboard').style.display = 'none';
     document.getElementById('seccion-formulario').style.display = 'block';
     document.getElementById('titulo-formulario').innerText = "Editar Servicio";
     
-    const q = query(collection(db, "servicios")); // Búsqueda simplificada para claridad
+    const q = query(collection(db, "servicios"));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((docSnap) => {
         if (docSnap.id === id) {
             const data = docSnap.data();
             document.getElementById('nombre').value = data.nombre || '';
             document.getElementById('categoria').value = data.categoria || '';
-            document.getElementById('ubicacion').value = data.ubicacion || '100% Online (Virtual)';
+            document.getElementById('ubicacion').value = data.ubicacion || 'A domicilio';
             document.getElementById('whatsapp').value = data.whatsapp || '';
             document.getElementById('instagram').value = data.instagram || '';
             document.getElementById('facebook').value = data.facebook || '';
@@ -119,7 +140,7 @@ window.editarServicio = async function(id) {
 };
 
 window.borrarServicio = async function(id) {
-    if(confirm("¿Seguro que deseas eliminar este servicio?")) {
+    if(confirm("¿Seguro que deseas eliminar este servicio definitivamente?")) {
         await deleteDoc(doc(db, "servicios", id));
         mostrarDashboard();
     }
@@ -128,10 +149,6 @@ window.borrarServicio = async function(id) {
 document.getElementById('btn-crear-nuevo').addEventListener('click', () => {
     documentoIdActual = null;
     document.getElementById('form-servicio').reset();
-    // Re-ensure payments are unchecked if previously edited card had them
-    document.getElementById('urgencias').checked = false;
-    document.getElementById('presupuesto').checked = false;
-    
     document.getElementById('seccion-dashboard').style.display = 'none';
     document.getElementById('seccion-formulario').style.display = 'block';
     document.getElementById('titulo-formulario').innerText = "Nuevo Servicio";
@@ -161,79 +178,145 @@ document.getElementById('form-servicio').addEventListener('submit', async (e) =>
     try {
         if (documentoIdActual) { await updateDoc(doc(db, "servicios", documentoIdActual), datos); } 
         else { await addDoc(collection(db, "servicios"), datos); }
-        alert("¡Servicio guardado exitosamente!");
         mostrarDashboard();
     } catch (error) { alert("Error al guardar."); } 
     finally { btnSubmit.innerText = "Guardar Servicio"; btnSubmit.disabled = false; }
 });
 
 // ==========================================
-// LÓGICA DEL DIRECTORIO Y BUSCADOR PREDICITVO
+// COMPARTIR PERFIL (Web Share API)
+// ==========================================
+window.compartirPerfil = function(nombre, categoria) {
+    if (navigator.share) {
+        navigator.share({
+            title: nombre,
+            text: `Mira este profesional en Santa Ana: ${nombre} (${categoria})`,
+            url: window.location.href
+        }).catch(console.error);
+    } else {
+        alert("Para compartir, copia la dirección web de esta página.");
+    }
+};
+
+// ==========================================
+// DIRECTORIO, BUSCADOR Y FILTROS
 // ==========================================
 const listaServicios = document.getElementById('lista-servicios');
+const contadorTexto = document.getElementById('contador-profesionales');
+let filtroActivo = ""; // urgencias, online, domicilio
 
 async function cargarServicios() {
-    listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Cargando profesionales de Santa Ana...</p>";
+    // 1. Mostrar Skeletons
+    listaServicios.innerHTML = `
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    `;
+
     try {
         const querySnapshot = await getDocs(collection(db, "servicios"));
         listaServicios.innerHTML = ""; 
+        
+        // 2. Actualizar Contador Dinámico
+        const cantidad = querySnapshot.size;
+        contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
+
         if (querySnapshot.empty) {
-            listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color:#666;'>Aún no hay servicios publicados en Villa Parque Santa Ana. ¡Sé el primero!</p>"; return;
+            listaServicios.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Aún no hay servicios publicados. ¡Sé el primero!</p>"; return;
         }
+
+        let delayAnimacion = 0; // Para el efecto escalonado
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const waNumero = data.whatsapp.replace(/\D/g,''); 
             
-            // Construir gatillos de conversión visualmente (badges)
             let badgesHTML = "";
-            if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 URGENCIAS 24H</span>`;
-            if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 PRESUPUESTO SIN CARGO</span>`;
+            if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 24hs</span>`;
+            if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 Sin Cargo</span>`;
 
-            // Estilizar enlaces de redes como botones redondeados si existen
             let redesHTML = "";
             if (data.instagram || data.facebook) {
                 redesHTML += `<div class="redes-sociales">`;
                 if (data.instagram) {
                     let igLink = data.instagram.includes('http') ? data.instagram : `https://instagram.com/${data.instagram.replace('@','')}`;
-                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig rounded-button">Ver Instagram</a>`;
+                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig">Instagram</a>`;
                 }
                 if (data.facebook) {
                     let fbLink = data.facebook.includes('http') ? data.facebook : `https://${data.facebook}`;
-                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb rounded-button">Ver Facebook</a>`;
+                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb">Facebook</a>`;
                 }
                 redesHTML += `</div>`;
             }
 
+            // Datos invisibles para ayudar a los filtros lógicos
+            const esOnline = data.ubicacion.includes('Online') ? 'true' : 'false';
+            const esDomicilio = data.ubicacion.includes('domicilio') ? 'true' : 'false';
+
             const tarjetaHTML = `
-                <article class="tarjeta-servicio">
-                    <div class="categoria-tag pill">${data.categoria}</div>
+                <article class="tarjeta-servicio fade-in-up" 
+                         style="animation-delay: ${delayAnimacion}s;"
+                         data-urgencias="${data.urgencias || false}"
+                         data-online="${esOnline}"
+                         data-domicilio="${esDomicilio}">
+                    
+                    <div class="card-header">
+                        <div class="categoria-tag">${data.categoria}</div>
+                        <button class="btn-share" onclick="compartirPerfil('${data.nombre}', '${data.categoria}')" title="Compartir Perfil">🔗</button>
+                    </div>
+                    
                     <h2>${data.nombre}</h2>
                     ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
                     <p class="descripcion">${data.descripcion}</p>
+                    
                     <div class="info-extra">
-                        <span>📍Modalidad: ${data.ubicacion || 'Consultar'}</span>
+                        <span>📍 ${data.ubicacion || 'Consultar'}</span>
                     </div>
+                    
                     ${redesHTML}
-                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button-large">
-                        Contactar por WhatsApp
+                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio" target="_blank" class="btn-whatsapp pulse-subtle">
+                        Contactar
                     </a>
                 </article>
             `;
             listaServicios.innerHTML += tarjetaHTML;
+            delayAnimacion += 0.1; // Siguiente tarjeta aparece 0.1s más tarde
         });
-    } catch (error) { listaServicios.innerHTML = "<p style='color: red; grid-column: 1/-1; text-align: center;'>Error de conexión. Intenta recargar la página.</p>"; }
+
+    } catch (error) { listaServicios.innerHTML = "<p style='color: red;'>Error de conexión.</p>"; }
 }
 
-// Buscador predictivo en tiempo real (lado del cliente)
-document.getElementById('buscador').addEventListener('input', (e) => {
-    const textoBusqueda = e.target.value.toLowerCase();
-    document.querySelectorAll('.tarjeta-servicio').forEach(tarjeta => {
+// Lógica del Buscador + Filtros combinados
+function aplicarFiltros() {
+    const textoBusqueda = document.getElementById('buscador').value.toLowerCase();
+    const tarjetas = document.querySelectorAll('.tarjeta-servicio');
+
+    tarjetas.forEach(tarjeta => {
         const contenido = tarjeta.innerText.toLowerCase();
-        // Filtra basado en cualquier contenido de texto en la tarjeta
-        tarjeta.style.display = contenido.includes(textoBusqueda) ? 'flex' : 'none';
+        const coincideTexto = contenido.includes(textoBusqueda);
+        
+        let coincideFiltroRapido = true;
+        if (filtroActivo === 'urgencias') coincideFiltroRapido = tarjeta.dataset.urgencias === 'true';
+        if (filtroActivo === 'online') coincideFiltroRapido = tarjeta.dataset.online === 'true';
+        if (filtroActivo === 'domicilio') coincideFiltroRapido = tarjeta.dataset.domicilio === 'true';
+
+        tarjeta.style.display = (coincideTexto && coincideFiltroRapido) ? 'flex' : 'none';
+    });
+}
+
+document.getElementById('buscador').addEventListener('input', aplicarFiltros);
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // Toggle botón visualmente
+        if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            filtroActivo = "";
+        } else {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filtroActivo = btn.dataset.filter;
+        }
+        aplicarFiltros();
     });
 });
 
-// Cargar servicios al inicio del index público
 cargarServicios();
