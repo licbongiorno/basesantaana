@@ -97,10 +97,10 @@ main.container { flex: 1; width: 100%; }
 }
 .tarjeta-servicio:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-color); }
 
-/* ESTILO DE LA NUEVA TARJETA DE INVITACIÓN (AQUÍ ESTÁ LA MAGIA DE UX) */
+/* ESTILO DE LA TARJETA DE INVITACIÓN (Corregido "etc.") */
 .tarjeta-cta-unirse {
-    border: 2px dashed #cbd5e0; /* Borde punteado diferente */
-    border-top: 5px dashed var(--primary-color); /* Mantenemos el color arriba pero punteado */
+    border: 2px dashed #cbd5e0; 
+    border-top: 5px dashed var(--primary-color); 
     background: linear-gradient(135deg, var(--card-bg) 0%, #f7fafc 100%);
     justify-content: center; align-items: center; text-align: center;
 }
@@ -168,7 +168,6 @@ main.container { flex: 1; width: 100%; }
 .check-input { display: flex; align-items: center; gap: 0.8rem; }
 .check-input input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
 
-/* Dashboard Items */
 .item-dashboard { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 1.2rem; border-radius: 12px; border-left: 4px solid var(--primary-color); border: 1px solid var(--border-color); }
 
 /* ANIMACIONES */
