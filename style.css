@@ -34,7 +34,7 @@ body {
     background-color: var(--bg-color); color: var(--text-color); 
     overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh;
 }
-body.modal-open { overflow: hidden; /* Evita que el fondo scrollee cuando el modal está abierto */ }
+body.modal-open { overflow: hidden; }
 
 main.container { flex: 1; width: 100%; }
 
@@ -45,10 +45,30 @@ main.container { flex: 1; width: 100%; }
     border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: var(--shadow-md);
 }
 
-.header-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; max-width: 1100px; margin: 0 auto 1rem auto; }
+/* Rediseño del Header Top para acomodar los botones sin solapar */
+.header-top { 
+    display: flex; justify-content: flex-end; align-items: center; gap: 0.8rem; 
+    max-width: 1100px; margin: 0 auto 1rem auto; 
+}
+
 .btn-icon { background: rgba(255,255,255,0.2); border: none; font-size: 1.2rem; cursor: pointer; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.btn-publicar { background-color: transparent; border: 2px solid #fff; color: #fff; padding: 0.5rem 1rem; border-radius: 12px; cursor: pointer; font-weight: 600; }
+.btn-publicar { background-color: transparent; border: 2px solid #fff; color: #fff; padding: 0.5rem 1rem; border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
 .btn-publicar:hover { background-color: rgba(255,255,255,0.1); }
+
+/* Nuevo Botón Sugerencias (Arriba) */
+.btn-sugerencias-header {
+    background-color: rgba(255,255,255,0.15); color: #fff; padding: 0.5rem 1rem; border-radius: 12px; 
+    text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; 
+    border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(5px); transition: 0.2s;
+}
+.btn-sugerencias-header:hover { background-color: rgba(255,255,255,0.25); }
+
+/* Lógica Responsiva para Ocultar Texto en Celulares */
+@media (max-width: 480px) {
+    .ocultar-movil { display: none; }
+    .header-top { gap: 0.5rem; }
+    .btn-publicar, .btn-sugerencias-header { padding: 0.5rem 0.8rem; }
+}
 
 .logo-text { font-size: 2.2rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); color: #fff; }
 .location-text { font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #e0f2fe; margin-bottom: 0.5rem;}
@@ -84,7 +104,7 @@ main.container { flex: 1; width: 100%; }
 
 .tarjeta-servicio h2 { font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 700; color: var(--text-color);}
 .descripcion { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.2rem; flex-grow: 1; line-height: 1.5; 
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; /* Corta textos muy largos en la tarjeta */
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 .badges-container { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; }
@@ -104,9 +124,8 @@ main.container { flex: 1; width: 100%; }
     padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: block; border: none; cursor: pointer; box-shadow: var(--shadow-sm); width: 100%;
 }
 .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05);}
-.btn-sugerencias { position: fixed; bottom: 20px; left: 20px; background-color: var(--text-color); color: var(--bg-color); border-radius: 30px; padding: 12px 24px; text-decoration: none; font-weight: bold; z-index: 1000; box-shadow: var(--shadow-lg); border: 2px solid rgba(255,255,255,0.1);}
 
-/* ESTILOS DEL MODAL (Popup de Perfil) */
+/* ESTILOS DEL MODAL */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -139,12 +158,9 @@ main.container { flex: 1; width: 100%; }
 .check-input { display: flex; align-items: center; gap: 0.8rem; }
 .check-input input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
 
-/* Dashboard Items */
 .item-dashboard { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 1.2rem; border-radius: 12px; border-left: 4px solid var(--primary-color); border: 1px solid var(--border-color); }
 
 /* ANIMACIONES */
-.pulse-animation { animation: pulse 2s infinite; }
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .pulse-subtle:hover { animation: pulseSubtle 1s infinite; }
 @keyframes pulseSubtle { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 .fade-in-up { animation: fadeInUp 0.5s ease forwards; opacity: 0; transform: translateY(20px); }
@@ -157,6 +173,6 @@ main.container { flex: 1; width: 100%; }
 
 /* FOOTER */
 .footer { 
-    text-align: center; padding: 1.5rem 1rem 5rem 1rem; color: var(--text-muted); 
+    text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); 
     font-size: 0.9rem; border-top: 1px solid var(--border-color); background: var(--card-bg); width: 100%;
 }
