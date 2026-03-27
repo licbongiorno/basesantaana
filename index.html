@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Directorio de Servicios Locales de Villa parque santa Ana </title>
+    <title>Directorio de Servicios - Villa Parque Santa Ana</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
@@ -11,11 +11,12 @@
 
     <header class="header">
         <div class="header-content">
-            <h1>Servicios Locales</h1>
-            <p>Encuentra profesionales y oficios de confianza en nuestra zona</p>
+            <h1 class="logo-text">Directorio de Servicios</h1>
+            <h2 class="location-text">Villa Parque Santa Ana</h2>
+            <p class="subtitle-text">Encuentra profesionales y oficios de confianza en nuestra zona.</p>
             
             <div class="search-box">
-                <input list="sugerencias-busqueda" id="buscador" placeholder="¿Qué buscas? (ej. Psicología, Plomero, Uñas)">
+                <input list="sugerencias-busqueda" id="buscador" placeholder="🔍 ¿Qué buscas? (ej. Plomero, Karate, Uñas)">
                 <datalist id="sugerencias-busqueda">
                     <option value="Psicología">
                     <option value="Psiquiatría">
@@ -41,11 +42,11 @@
         </div>
 
         <div id="vista-panel" style="display: none;" class="form-container">
-            <button id="btn-volver-directorio" class="btn-secundario" style="margin-bottom: 1rem;">⬅ Volver al Directorio General</button>
+            <button id="btn-volver-directorio" class="btn-secundario" style="margin-bottom: 1.5rem;">⬅ Volver al Directorio</button>
             
-            <div id="seccion-login" class="tarjeta-servicio centrado">
+            <div id="seccion-login" class="tarjeta-servicio centrado professional-card">
                 <h2>Ingresa para gestionar tu perfil</h2>
-                <button id="btn-login" class="btn-whatsapp" style="background-color: #4285F4; margin-top:1rem;">
+                <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1rem;">
                     Continuar con Google
                 </button>
             </div>
@@ -53,12 +54,12 @@
             <div id="seccion-dashboard" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2>Mis Servicios Publicados</h2>
-                    <button id="btn-crear-nuevo" class="btn-social btn-fb" style="border:none; cursor:pointer;">+ Agregar Servicio</button>
+                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar Servicio</button>
                 </div>
                 <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
             </div>
 
-            <div id="seccion-formulario" class="tarjeta-servicio" style="display: none;">
+            <div id="seccion-formulario" class="tarjeta-servicio professional-card" style="display: none;">
                 <h2 id="titulo-formulario">Datos del Servicio</h2>
                 
                 <form id="form-servicio" class="formulario-estilizado">
@@ -111,20 +112,20 @@
                         <input type="text" id="facebook" placeholder="Ej. facebook.com/tu_pagina">
                     </div>
 
-                    <div class="grupo-input">
+                    <div class="grupo-input triggers-group">
                         <label>Gatillos (Destaca tu anuncio)</label>
                         <div class="check-input"><input type="checkbox" id="urgencias"> <label>🚨 Atiendo Urgencias 24hs</label></div>
                         <div class="check-input"><input type="checkbox" id="presupuesto"> <label>💡 Presupuesto sin cargo</label></div>
                     </div>
 
-                    <div class="grupo-input">
+                    <div class="grupo-input description-group">
                         <label>Breve Descripción *</label>
                         <textarea id="descripcion" rows="4" required placeholder="Describe qué ofreces detalladamente."></textarea>
                     </div>
 
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button type="submit" id="btn-guardar" class="btn-whatsapp" style="flex: 2;">Guardar Servicio</button>
-                        <button type="button" id="btn-cancelar" style="flex: 1; background: #ccc; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Cancelar</button>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;" class="form-actions">
+                        <button type="submit" id="btn-guardar" class="btn-whatsapp rounded-button" style="flex: 2;">Guardar Servicio</button>
+                        <button type="button" id="btn-cancelar" class="rounded-button" style="flex: 1; background: #ccc; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Cancelar</button>
                     </div>
                 </form>
             </div>
@@ -132,9 +133,15 @@
 
     </main>
 
-    <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio%20de%20Santa%20Ana:" target="_blank" class="btn-sugerencias">
+    <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio%20de%20Santa%20Ana:" target="_blank" class="btn-sugerencias rounded-button-large">
         💡 Sugerencias
     </a>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <p>Pagina creada Por Nicolas Bongiorno</p>
+        </div>
+    </footer>
 
     <script type="module" src="app.js"></script>
 </body>
