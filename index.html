@@ -13,7 +13,7 @@
         <div class="header-top">
             <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio" target="_blank" class="btn-sugerencias-header" title="Sugerencias">💡<span class="ocultar-movil"> Sugerencias</span></a>
             
-            <button id="btn-publicar" class="btn-publicar" onclick="document.getElementById('btn-nav-panel').click()">➕<span class="ocultar-movil"> Publicar mi Servicio Gratis</span></button>
+            <button id="btn-publicar" class="btn-publicar" onclick="document.getElementById('btn-nav-panel').click()">👤<span class="ocultar-movil"> Mi Perfil / Administrar</span></button>
             
             <button id="btn-theme-toggle" class="btn-icon" title="Cambiar modo oscuro/claro">🌙</button>
             <button id="btn-nav-panel" style="display:none;">Nav</button> 
@@ -55,21 +55,26 @@
         </div>
 
         <div id="vista-panel" style="display: none;" class="form-container">
-            <button id="btn-volver-directorio" class="btn-secundario" style="margin-bottom: 1.5rem;">⬅ Volver al Directorio</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem;">
+                <button id="btn-volver-directorio" class="btn-secundario">⬅ Volver al Directorio</button>
+                <button id="btn-logout" class="rounded-button" style="display: none; background: #e2e8f0; color: #4a5568; border: none; cursor: pointer; font-size: 0.85rem; padding: 0.5rem 0.8rem;">🔒 Cerrar Sesión</button>
+            </div>
             
             <div id="seccion-login" class="tarjeta-servicio centrado professional-card">
                 <h2>Ingresa para gestionar tu perfil</h2>
-                <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1rem;">
+                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Necesitas loguearte con Google para agregar, editar o borrar tus publicaciones.</p>
+                <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1.5rem;">
                     Continuar con Google
                 </button>
             </div>
 
             <div id="seccion-dashboard" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2>Mis Servicios</h2>
-                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar</button>
+                    <h2>Mis Servicios Publicados</h2>
+                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar Nuevo Servicio</button>
                 </div>
-                <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;">
+                    </div>
             </div>
 
             <div id="seccion-formulario" class="tarjeta-servicio professional-card fade-in-up" style="display: none;">
@@ -122,7 +127,7 @@
                     <div class="grupo-input" style="flex-direction: row; gap: 1rem;">
                         <div style="flex: 1;">
                             <label style="color:#e1306c;">Instagram (Opcional)</label>
-                            <input type="text" id="instagram" placeholder="Ej. tu_usuario" style="width:100%;">
+                            <input type="text" id="instagram" placeholder="Ej. tu_usuario o enlace" style="width:100%;">
                         </div>
                         <div style="flex: 1;">
                             <label style="color:#1877f2;">Facebook (Opcional)</label>
