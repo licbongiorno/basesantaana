@@ -68,6 +68,7 @@ const btnVolverDirectorio = document.getElementById('btn-volver-directorio');
 window.abrirPanelGestion = function() {
     vistaDirectorio.style.display = 'none';
     vistaPanel.style.display = 'block';
+    document.body.classList.add('modo-formulario'); // Activa limpieza visual
     window.scrollTo(0,0);
 }
 
@@ -76,6 +77,7 @@ btnNavPanel.addEventListener('click', abrirPanelGestion);
 btnVolverDirectorio.addEventListener('click', () => {
     vistaPanel.style.display = 'none';
     vistaDirectorio.style.display = 'block';
+    document.body.classList.remove('modo-formulario'); // Desactiva limpieza visual
     cargarServicios(); 
 });
 
@@ -241,8 +243,6 @@ window.abrirModal = function(id) {
     if(!data) return;
 
     const waNumero = data.whatsapp.replace(/\D/g,'');
-    
-    // Si es destacada, mostramos la etiqueta en el popup también
     const esDestacado = data.nombre.toLowerCase().includes('nathalia andrada');
     
     let badgesHTML = "";
@@ -322,7 +322,6 @@ async function cargarServicios() {
         const cantidad = querySnapshot.size;
         contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
 
-        // 1. Inyectamos la invitación primero
         const tarjetaCtaHTML = `
             <article class="tarjeta-servicio tarjeta-cta-unirse fade-in-up professional-card" 
                      onclick="event.stopPropagation(); abrirPanelGestion();">
@@ -341,18 +340,13 @@ async function cargarServicios() {
         if (querySnapshot.empty) { return; }
 
         let delayAnimacion = 0.1; 
-        
-        // Variables para separar destacados de normales
         let htmlDestacados = "";
         let htmlNormales = "";
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             window.directorioData[docSnap.id] = data; 
-            
             const waNumero = data.whatsapp.replace(/\D/g,''); 
-            
-            // VERIFICAMOS SI ES NATHALIA (Acepta mayúsculas o minúsculas)
             const esDestacado = data.nombre.toLowerCase().includes('nathalia andrada');
             
             let badgesHTML = "";
@@ -387,22 +381,18 @@ async function cargarServicios() {
                          data-urgencias="${data.urgencias || false}"
                          data-online="${esOnline}"
                          data-domicilio="${esDomicilio}">
-                    
                     <div class="card-header">
                         <div class="categoria-tag">${data.categoria}</div>
                         <button class="btn-share" onclick="event.stopPropagation(); compartirPerfil('${data.nombre}', '${data.categoria}')" title="Compartir Perfil">
                             ${shareIcon}
                         </button>
                     </div>
-                    
                     <h2>${data.nombre}</h2>
                     ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
                     <p class="descripcion">${data.descripcion}</p>
-                    
                     <div class="info-extra">
                         <span>📍 ${data.ubicacion || 'Consultar'}</span>
                     </div>
-                    
                     ${redesHTML}
                     <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio" target="_blank" class="btn-whatsapp pulse-subtle" onclick="event.stopPropagation();">
                         Contactar
@@ -410,17 +400,10 @@ async function cargarServicios() {
                 </article>
             `;
             
-            // Separamos la tarjeta según si es destacada o no
-            if (esDestacado) {
-                htmlDestacados += tarjetaHTML;
-            } else {
-                htmlNormales += tarjetaHTML;
-            }
-            
+            if (esDestacado) htmlDestacados += tarjetaHTML;
+            else htmlNormales += tarjetaHTML;
             delayAnimacion += 0.1; 
         });
-        
-        // 2. Inyectamos los destacados justo después de la invitación, y luego los normales
         listaServicios.innerHTML += htmlDestacados + htmlNormales;
 
     } catch (error) { listaServicios.innerHTML = "<p style='color: red;'>Error de conexión.</p>"; }
@@ -432,15 +415,12 @@ function aplicarFiltros() {
 
     tarjetas.forEach(tarjeta => {
         if(tarjeta.classList.contains('tarjeta-cta-unirse')) return;
-
         const contenido = tarjeta.innerText.toLowerCase();
         const coincideTexto = contenido.includes(textoBusqueda);
-        
         let coincideFiltroRapido = true;
         if (filtroActivo === 'urgencias') coincideFiltroRapido = tarjeta.dataset.urgencias === 'true';
         if (filtroActivo === 'online') coincideFiltroRapido = tarjeta.dataset.online === 'true';
         if (filtroActivo === 'domicilio') coincideFiltroRapido = tarjeta.dataset.domicilio === 'true';
-
         tarjeta.style.display = (coincideTexto && coincideFiltroRapido) ? 'flex' : 'none';
     });
 }
