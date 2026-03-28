@@ -45,7 +45,6 @@ main.container { flex: 1; width: 100%; }
     border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: var(--shadow-md);
 }
 
-/* Rediseño del Header Top para acomodar los botones sin solapar */
 .header-top { 
     display: flex; justify-content: flex-end; align-items: center; gap: 0.8rem; 
     max-width: 1100px; margin: 0 auto 1rem auto; 
@@ -62,7 +61,6 @@ main.container { flex: 1; width: 100%; }
 }
 .btn-sugerencias-header:hover { background-color: rgba(255,255,255,0.25); }
 
-/* Lógica Responsiva para Ocultar Texto en Celulares */
 @media (max-width: 480px) {
     .ocultar-movil { display: none; }
     .header-top { gap: 0.5rem; }
@@ -88,7 +86,6 @@ main.container { flex: 1; width: 100%; }
 .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
 .grid-servicios { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem; }
 
-/* Tarjetas */
 .tarjeta-servicio { 
     background: var(--card-bg); border-radius: 20px; padding: 1.8rem; cursor: pointer;
     box-shadow: var(--shadow-sm); display: flex; flex-direction: column; 
@@ -97,7 +94,6 @@ main.container { flex: 1; width: 100%; }
 }
 .tarjeta-servicio:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-color); }
 
-/* ESTILO DE LA TARJETA DE INVITACIÓN (Corregido "etc.") */
 .tarjeta-cta-unirse {
     border: 2px dashed #cbd5e0; 
     border-top: 5px dashed var(--primary-color); 
@@ -133,7 +129,6 @@ main.container { flex: 1; width: 100%; }
     padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: block; border: none; cursor: pointer; box-shadow: var(--shadow-sm); width: 100%;
 }
 .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.05);}
-.btn-sugerencias { position: fixed; bottom: 20px; left: 20px; background-color: var(--text-color); color: var(--bg-color); border-radius: 30px; padding: 12px 24px; text-decoration: none; font-weight: bold; z-index: 1000; box-shadow: var(--shadow-lg); border: 2px solid rgba(255,255,255,0.1);}
 
 /* ESTILOS DEL MODAL */
 .modal-overlay {
@@ -156,7 +151,6 @@ main.container { flex: 1; width: 100%; }
 }
 .btn-close:hover { color: var(--text-color); }
 
-/* Formularios */
 .form-container { max-width: 650px; margin: 0 auto; }
 .formulario-estilizado { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
 .grupo-input { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -170,31 +164,38 @@ main.container { flex: 1; width: 100%; }
 
 .item-dashboard { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 1.2rem; border-radius: 12px; border-left: 4px solid var(--primary-color); border: 1px solid var(--border-color); }
 
-/* ANIMACIONES */
-.pulse-subtle:hover { animation: pulseSubtle 1s infinite; }
-@keyframes pulseSubtle { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 .fade-in-up { animation: fadeInUp 0.5s ease forwards; opacity: 0; transform: translateY(20px); }
 @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
-/* SKELETON LOADING */
 .skeleton { background: var(--input-bg); border-radius: 20px; padding: 1.8rem; height: 350px; border-top: 5px solid var(--border-color); position: relative; overflow: hidden; }
 .skeleton::after { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: shimmer 1.5s infinite; }
 @keyframes shimmer { 100% { left: 100%; } }
 
-/* FOOTER */
 .footer { 
     text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); 
     font-size: 0.9rem; border-top: 1px solid var(--border-color); background: var(--card-bg); width: 100%;
 }
-/* ==========================================
-   PERFILES DESTACADOS (PREMIUM)
-   ========================================== */
+
 .tarjeta-destacada {
-    border-top: 5px solid #eab308 !important; /* Borde superior Dorado */
+    border-top: 5px solid #eab308 !important; 
     background: linear-gradient(180deg, #fefce8 0%, var(--card-bg) 100%);
     box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
 }
 .tarjeta-destacada:hover {
     border-color: #eab308;
     box-shadow: 0 10px 20px rgba(234, 179, 8, 0.3);
+}
+
+/* ==========================================
+   MODO FORMULARIO (Limpieza de pantalla para Celulares)
+   ========================================== */
+body.modo-formulario .header {
+    position: relative; /* Evita que se solape al subir los errores */
+    padding-bottom: 1.5rem;
+}
+body.modo-formulario .search-container,
+body.modo-formulario .quick-filters,
+body.modo-formulario .trust-counter,
+body.modo-formulario .location-text {
+    display: none; /* Limpieza absoluta para el registro */
 }
