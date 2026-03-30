@@ -301,3 +301,109 @@ body.modo-formulario .location-text { display: none !important; }
     .banner-cta { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
     .btn-primario-sm { width: 100%; }
 }
+
+/* ==========================================
+   UI POLISH & MICRO-INTERACCIONES
+   ========================================== */
+
+/* Mejoramos el hover y la sombra de las tarjetas para reducir carga cognitiva */
+.tarjeta-servicio {
+    position: relative; /* Necesario para el botón de favoritos absoluto */
+    padding: 1.5rem;
+    border-radius: 24px; /* Bordes un poco más suaves, estilo app nativa */
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+/* Áreas táctiles más grandes para celulares (Mínimo 44px) */
+.btn-whatsapp, .btn-primario-sm {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- BOTÓN FAVORITOS (CORAZÓN ESTILO MELI) --- */
+.btn-favorito {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(4px);
+}
+[data-theme="dark"] .btn-favorito {
+    background: rgba(30, 41, 59, 0.9);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.btn-favorito:active { transform: scale(0.8); }
+.btn-favorito.activo { color: #ef4444; } /* Corazón rojo */
+.btn-favorito.activo i { animation: latido 0.3s ease-in-out; }
+
+@keyframes latido {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+/* --- BOTÓN COMPARTIR --- */
+.acciones-secundarias {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+.btn-compartir {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    min-height: 48px;
+}
+.btn-compartir:hover { background: var(--border-color); }
+
+/* --- TOAST NOTIFICACIÓN (Aviso de Login) --- */
+.toast-notificacion {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    padding: 12px 20px;
+    border-radius: 100px; /* Estilo píldora */
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    width: 90%;
+    max-width: 400px;
+}
+.toast-notificacion.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+.toast-contenido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
