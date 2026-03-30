@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB989b4dx4ao6So14IWRQwwZ0JybGVMFGQ",
@@ -17,6 +17,10 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
+let favoritosUsuario = new Set();
+
+// SVG compartir — disponible globalmente para tarjetas y modal
+const SHARE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 
 // ==========================================
 // UTILIDADES
@@ -51,12 +55,109 @@ function formatearEnlace(url, plataforma) {
 
 function formatearWhatsapp(numero) {
     if (!numero) return '';
-    let limpio = numero.replace(/\D/g, ''); 
+    let limpio = numero.replace(/\D/g, '');
     if (!limpio.startsWith('549') && !limpio.startsWith('54')) {
         limpio = '549' + limpio;
     }
     return limpio;
 }
+
+// ==========================================
+// TOAST NOTIFICATION
+// ==========================================
+let _toastTimeout;
+function mostrarToast(mensaje, esAviso = false) {
+    let toast = document.getElementById('toast-app');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-app';
+        toast.className = 'toast-app';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = mensaje;
+    toast.className = 'toast-app visible' + (esAviso ? ' toast-aviso' : '');
+    clearTimeout(_toastTimeout);
+    _toastTimeout = setTimeout(() => toast.classList.remove('visible'), 3000);
+}
+
+// ==========================================
+// COMPARTIR (Web Share API con fallback clipboard)
+// ==========================================
+window.compartirServicio = async function(id, event) {
+    if (event) event.stopPropagation();
+    const data = window.directorioData[id];
+    if (!data) return;
+    const shareData = {
+        title: data.nombre,
+        text: `${data.nombre} (${data.categoria}) — Directorio de Villa Parque Santa Ana`,
+        url: window.location.href
+    };
+    try {
+        if (navigator.share && navigator.canShare?.(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            await navigator.clipboard.writeText(window.location.href);
+            mostrarToast('🔗 Enlace copiado al portapapeles');
+        }
+    } catch (e) {
+        if (e.name !== 'AbortError') mostrarToast('No se pudo compartir.');
+    }
+};
+
+// ==========================================
+// FAVORITOS
+// ==========================================
+async function cargarFavoritos() {
+    if (!usuarioActual) return;
+    try {
+        const snap = await getDocs(collection(db, 'usuarios', usuarioActual.uid, 'favoritos'));
+        favoritosUsuario = new Set(snap.docs.map(d => d.id));
+        actualizarCorazones();
+    } catch(e) {
+        console.error('Error cargando favoritos:', e);
+    }
+}
+
+function actualizarCorazones() {
+    document.querySelectorAll('.btn-favorito[data-id]').forEach(btn => {
+        const esFav = favoritosUsuario.has(btn.dataset.id);
+        btn.classList.toggle('favorito-activo', esFav);
+        btn.setAttribute('aria-label', esFav ? 'Quitar de favoritos' : 'Guardar en favoritos');
+        btn.setAttribute('aria-pressed', esFav);
+    });
+}
+
+window.toggleFavorito = async function(id, event) {
+    if (event) event.stopPropagation();
+    if (!usuarioActual) {
+        mostrarToast('💡 Iniciá sesión para guardar favoritos', true);
+        return;
+    }
+    const esFav = favoritosUsuario.has(id);
+    const refFav = doc(db, 'usuarios', usuarioActual.uid, 'favoritos', id);
+
+    // Optimistic update inmediato + animación visual
+    esFav ? favoritosUsuario.delete(id) : favoritosUsuario.add(id);
+    actualizarCorazones();
+    document.querySelectorAll(`.btn-favorito[data-id="${id}"]`).forEach(btn => {
+        btn.classList.add('heart-pop');
+        btn.addEventListener('animationend', () => btn.classList.remove('heart-pop'), { once: true });
+    });
+
+    try {
+        if (esFav) {
+            await deleteDoc(refFav);
+        } else {
+            await setDoc(refFav, { guardadoEn: serverTimestamp() });
+            mostrarToast('❤️ ¡Guardado en favoritos!');
+        }
+    } catch(e) {
+        // Revertir si falla la base de datos
+        esFav ? favoritosUsuario.add(id) : favoritosUsuario.delete(id);
+        actualizarCorazones();
+        mostrarToast('Error al guardar. Intentá de nuevo.');
+    }
+};
 
 // ==========================================
 // MODO OSCURO & UX DE SCROLL (MERCADO LIBRE STYLE)
@@ -80,7 +181,6 @@ if (btnTheme) {
     });
 }
 
-// Efecto Scroll Cabecera
 const header = document.getElementById('main-header');
 window.addEventListener('scroll', () => {
     if (window.scrollY > 40) {
@@ -90,7 +190,6 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Evento Banner Promo
 document.getElementById('btn-publicar-banner')?.addEventListener('click', () => {
     document.getElementById('btn-publicar').click();
 });
@@ -117,14 +216,14 @@ if(btnVolverDirectorio) {
         if(vistaPanel) vistaPanel.classList.add('hidden');
         if(vistaDirectorio) vistaDirectorio.classList.remove('hidden');
         document.body.classList.remove('modo-formulario');
-        cargarServicios(); 
+        cargarServicios();
     });
 }
 
 // ==========================================
 // AUTENTICACIÓN
 // ==========================================
-let documentoIdActual = null; 
+let documentoIdActual = null;
 let usuarioActual = null;
 
 const btnLogout = document.getElementById('btn-logout');
@@ -138,8 +237,11 @@ onAuthStateChanged(auth, async (user) => {
         if(seccionLogin) seccionLogin.classList.add('hidden');
         if(btnLogout) btnLogout.classList.remove('hidden');
         mostrarDashboard();
+        cargarFavoritos();
     } else {
         usuarioActual = null;
+        favoritosUsuario = new Set();
+        actualizarCorazones();
         if(seccionLogin) seccionLogin.classList.remove('hidden');
         if(seccionDashboard) seccionDashboard.classList.add('hidden');
         if(seccionFormulario) seccionFormulario.classList.add('hidden');
@@ -159,8 +261,8 @@ if(btnLogin) {
 if(btnLogout) {
     btnLogout.addEventListener('click', async () => {
         if(confirm("¿Seguro que deseas cerrar sesión?")) {
-            try {
-                await signOut(auth);
+            try { 
+                await signOut(auth); 
                 if(btnVolverDirectorio) btnVolverDirectorio.click(); 
             } catch (error) { alert("Error al cerrar sesión."); }
         }
@@ -285,14 +387,6 @@ document.getElementById('form-servicio')?.addEventListener('submit', async (e) =
 // ==========================================
 // MODAL & DIRECTORIO
 // ==========================================
-window.compartirPerfil = function(nombre, categoria) {
-    if (navigator.share) {
-        navigator.share({ title: nombre, text: `Mira este profesional en Santa Ana: ${nombre}`, url: window.location.href }).catch(console.error);
-    } else {
-        alert("Copia la dirección de esta página.");
-    }
-};
-
 const modalPerfil = document.getElementById('modal-perfil');
 const modalBody = document.getElementById('modal-body');
 
@@ -319,7 +413,12 @@ window.abrirModal = function(id) {
 
     if(modalBody) {
         modalBody.innerHTML = `
-            <div class="categoria-tag" style="margin-bottom: 1rem; display: inline-block;">${sanitize(data.categoria)}</div>
+            <div style="display:flex; justify-content: space-between; align-items:flex-start;">
+                <div class="categoria-tag" style="margin-bottom: 1rem; display: inline-block;">${sanitize(data.categoria)}</div>
+                <button class="btn-share" onclick="compartirServicio('${id}', event)" title="Compartir">
+                    ${SHARE_ICON}
+                </button>
+            </div>
             <h2 style="font-size: 1.6rem; margin-bottom: 0.8rem;">${sanitize(data.nombre)}</h2>
             ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
             <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color);">
@@ -380,31 +479,32 @@ async function cargarServicios() {
             if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 24hs</span>`;
             if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 Sin Cargo</span>`;
 
-            let redesHTML = "";
-            if (data.instagram || data.facebook) {
-                redesHTML += `<div class="redes-sociales">`;
-                if (data.instagram) redesHTML += `<a href="${formatearEnlace(data.instagram, 'instagram')}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">IG</a>`;
-                if (data.facebook) redesHTML += `<a href="${formatearEnlace(data.facebook, 'facebook')}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">FB</a>`;
-                redesHTML += `</div>`;
-            }
-
             const ubicacionSafe = (data.ubicacion || "").toString().toLowerCase();
             const esOnline = ubicacionSafe.includes('online') ? 'true' : 'false';
             const esDomicilio = ubicacionSafe.includes('domicilio') ? 'true' : 'false';
             const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
 
+            // Renderizamos la tarjeta incluyendo el botón de favoritos y compartir dinámico
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up ${claseAdicional}" style="animation-delay: ${delayAnimacion}s;" onclick="abrirModal('${docSnap.id}')"
                          data-nombre="${sanitize(data.nombre)}" data-categoria="${sanitize(data.categoria)}" data-descripcion="${sanitize(data.descripcion)}" data-urgencias="${data.urgencias || false}" data-online="${esOnline}" data-domicilio="${esDomicilio}">
-                    <div class="card-header">
+                    
+                    <button class="btn-favorito" data-id="${docSnap.id}" onclick="toggleFavorito('${docSnap.id}', event)" aria-label="Guardar en favoritos"></button>
+
+                    <div class="card-header" style="padding-right: 35px;">
                         <div class="categoria-tag">${sanitize(data.categoria)}</div>
                     </div>
                     <h2>${sanitize(data.nombre)}</h2>
                     ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
                     <p class="descripcion">${sanitize(data.descripcion)}</p>
                     <div class="info-extra"><span>📍 ${sanitize(data.ubicacion || 'Consultar')}</span></div>
-                    ${redesHTML}
-                    <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" class="btn-whatsapp pulse-subtle" onclick="event.stopPropagation();">💬 Consultar</a>
+                    
+                    <div class="card-actions" style="margin-top: auto; display:flex; gap: 0.5rem; justify-content: space-between; align-items:center;">
+                        <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" class="btn-whatsapp pulse-subtle" onclick="event.stopPropagation();" style="flex:1; margin:0; padding: 0.8rem;">💬 Consultar</a>
+                        <button class="btn-share" onclick="compartirServicio('${docSnap.id}', event)" title="Compartir">
+                            ${SHARE_ICON}
+                        </button>
+                    </div>
                 </article>
             `;
             if (esDestacado) htmlDestacados += tarjetaHTML;
@@ -413,6 +513,7 @@ async function cargarServicios() {
         });
         
         listaServicios.innerHTML = htmlDestacados + htmlNormales;
+        actualizarCorazones();
 
     } catch (error) { 
         listaServicios.innerHTML = "<p style='color: red; text-align:center;'>Error de conexión.</p>"; 
@@ -425,7 +526,6 @@ function aplicarFiltros() {
     const terminosBusqueda = textoBusqueda.split(' ').filter(termino => termino.length > 0);
     const bannerPromo = document.getElementById('banner-promocional');
 
-    // UX: Ocultar banner si el usuario está buscando algo
     if (terminosBusqueda.length > 0) {
         bannerPromo?.classList.add('hidden');
     } else {
