@@ -82,7 +82,7 @@ if (btnTheme) {
 }
 
 // ==========================================
-// SPA (Single Page Application)
+// SPA Y PANEL DE USUARIO
 // ==========================================
 const vistaDirectorio = document.getElementById('vista-directorio');
 const vistaPanel = document.getElementById('vista-panel');
@@ -182,8 +182,6 @@ if(tabAnuncios && tabFavoritos) {
 async function mostrarDashboard() {
     if(seccionFormulario) seccionFormulario.classList.add('hidden');
     if(seccionDashboard) seccionDashboard.classList.remove('hidden');
-    
-    // Asegurarse de que al cargar se abra la pestaña de anuncios
     if(tabAnuncios) tabAnuncios.click();
     
     const contenedorLista = document.getElementById('lista-mis-servicios');
@@ -221,7 +219,8 @@ async function mostrarDashboard() {
     }
 }
 
-function renderizarMisFavoritosDash() {
+// FIX DIAMANTE: Renderiza los favoritos correctamente en el panel
+window.renderizarMisFavoritosDash = function() {
     const contenedorFavs = document.getElementById('lista-mis-favoritos');
     if(!contenedorFavs) return;
     
@@ -236,10 +235,16 @@ function renderizarMisFavoritosDash() {
         const data = window.directorioData[id];
         if(data) {
             htmlAcumulado += `
-                <article class="tarjeta-servicio fade-in-up" onclick="abrirModal('${id}')" style="padding: 1rem;">
-                    <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${sanitize(data.nombre)}</h3>
-                    <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: bold;">${sanitize(data.categoria)}</span>
-                </article>
+                <div class="item-dashboard fade-in-up" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${sanitize(data.nombre)}</h3>
+                        <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: bold;">${sanitize(data.categoria)}</span>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button onclick="cerrarModalPerfil(); abrirModal('${id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Ver Anuncio</button>
+                        <button onclick="toggleFavorito('${id}'); renderizarMisFavoritosDash();" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">❌ Quitar</button>
+                    </div>
+                </div>
             `;
         }
     });
@@ -341,18 +346,17 @@ if(formServicio) {
 // VENTANA MODAL, FAVORITOS Y COMPARTIR
 // ==========================================
 
-// FIX DIAMANTE: Los favoritos se guardan localmente pero ATADOS al UID del usuario logueado
 function obtenerFavoritos() {
     if(!usuarioActual) return [];
     return JSON.parse(localStorage.getItem('favs_santa_ana_' + usuarioActual.uid)) || [];
 }
 
 window.toggleFavorito = function(id) {
-    // Protección estricta: Solo si está logueado
+    // FIX DIAMANTE: Si no hay usuario, alerta y lleva al login obligatoriamente.
     if(!usuarioActual) {
-        alert("👋 ¡Hola! Para guardar profesionales en Favoritos, primero debes iniciar sesión.");
+        alert("👋 Para guardar a un profesional en Favoritos, primero debes iniciar sesión.");
         cerrarModalPerfil();
-        abrirPanelGestion(); // Lo lleva directo a la pantalla de login
+        abrirPanelGestion();
         return;
     }
 
@@ -360,30 +364,26 @@ window.toggleFavorito = function(id) {
     const btn = document.getElementById('btn-fav-modal');
     
     if (favs.includes(id)) {
-        // Remover favorito
         favs = favs.filter(favId => favId !== id);
         if(btn) { 
             btn.classList.remove('es-favorito'); 
-            btn.innerHTML = '🤍'; 
-            btn.title = 'Agregar a favoritos';
+            btn.innerHTML = '🤍 Guardar'; 
         }
     } else {
-        // Agregar favorito
         favs.push(id);
         if(btn) { 
             btn.classList.add('es-favorito'); 
-            btn.innerHTML = '❤️'; 
-            btn.title = 'Quitar de favoritos';
+            btn.innerHTML = '❤️ Guardado'; 
         }
     }
     
     localStorage.setItem('favs_santa_ana_' + usuarioActual.uid, JSON.stringify(favs));
 };
 
-// FIX DIAMANTE: Compartir fuerza la URL específica del anuncio
+// FIX DIAMANTE: Compartir fuerza la URL específica del anuncio limpiando parámetros viejos
 window.compartirAnuncio = function(id, nombre, categoria) {
-    // Forzamos que la URL a compartir sea SIEMPRE la base web + ?id=XXX
-    const urlCompartir = window.location.origin + window.location.pathname + "?id=" + id;
+    const urlLimpia = window.location.origin + window.location.pathname;
+    const urlCompartir = urlLimpia + "?id=" + id;
     
     if (navigator.share) {
         navigator.share({
@@ -392,7 +392,6 @@ window.compartirAnuncio = function(id, nombre, categoria) {
             url: urlCompartir
         }).catch(console.error);
     } else {
-        // PC Fallback
         navigator.clipboard.writeText(urlCompartir).then(() => {
             alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp o en tus redes sociales.");
         });
@@ -435,21 +434,14 @@ window.abrirModal = function(id) {
     const favs = obtenerFavoritos();
     const esFav = favs.includes(id);
     const claseFav = esFav ? 'es-favorito' : '';
-    const iconoFav = esFav ? '❤️' : '🤍';
-    const tituloFav = esFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
+    const textoFav = esFav ? '❤️ Guardado' : '🤍 Guardar';
 
-    // FIX DIAMANTE: Diseño de Cabecera con iconos alineados y X separada
+    // FIX DIAMANTE: X aislada arriba. Compartir y Guardar abajo del todo.
     if(modalBody) {
         modalBody.innerHTML = `
-            <div class="modal-header-actions">
-                <div style="flex: 1; padding-right: 1rem;">
-                    <div class="categoria-tag" style="margin-bottom: 0.5rem; display: inline-block;">${sanitize(data.categoria)}</div>
-                    <h2 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 0;">${sanitize(data.nombre)}</h2>
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center; margin-top: 0.5rem;">
-                    <button class="btn-icon-action" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre)}', '${sanitize(data.categoria)}')" title="Compartir este perfil">🔗</button>
-                    <button id="btn-fav-modal" class="btn-icon-action btn-fav-icon ${claseFav}" onclick="toggleFavorito('${id}')" title="${tituloFav}">${iconoFav}</button>
-                </div>
+            <div style="padding-right: 30px;">
+                <div class="categoria-tag" style="margin-bottom: 0.5rem; display: inline-block;">${sanitize(data.categoria)}</div>
+                <h2 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 0.5rem;">${sanitize(data.nombre)}</h2>
             </div>
             
             ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
@@ -465,7 +457,12 @@ window.abrirModal = function(id) {
             
             ${redesHTML}
             
-            <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp rounded-button pulse-subtle" style="margin-top: 2rem;">
+            <div style="display: flex; gap: 10px; margin-top: 1.5rem; margin-bottom: 10px;">
+                <button id="btn-fav-modal" class="btn-modal-action btn-fav-icon ${claseFav}" onclick="toggleFavorito('${id}')" style="flex: 1; padding: 12px;">${textoFav}</button>
+                <button class="btn-modal-action" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre)}', '${sanitize(data.categoria)}')" style="flex: 1; padding: 12px;">🔗 Compartir</button>
+            </div>
+
+            <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp rounded-button pulse-subtle">
                 💬 Consultar por WhatsApp
             </a>
         `;
@@ -479,16 +476,7 @@ window.abrirModal = function(id) {
     }
 };
 
-const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-if(btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModalPerfil);
-
-if(modalPerfil) {
-    modalPerfil.addEventListener('click', (e) => {
-        if(e.target === modalPerfil) cerrarModalPerfil();
-    });
-}
-
-function cerrarModalPerfil() {
+window.cerrarModalPerfil = function() {
     if(!modalPerfil) return;
     modalPerfil.classList.remove('active');
     document.body.classList.remove('modal-open');
@@ -496,6 +484,15 @@ function cerrarModalPerfil() {
     
     // Limpia la URL para que no quede el ID enganchado al volver al directorio general
     history.pushState(null, null, window.location.pathname);
+};
+
+const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+if(btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModalPerfil);
+
+if(modalPerfil) {
+    modalPerfil.addEventListener('click', (e) => {
+        if(e.target === modalPerfil) cerrarModalPerfil();
+    });
 }
 
 // ==========================================
