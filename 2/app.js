@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB989b4dx4ao6So14IWRQwwZ0JybGVMFGQ",
@@ -18,252 +18,148 @@ const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
 
-// ==========================================
-// UTILIDADES
-// ==========================================
-function sanitize(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
-function quitarAcentos(str) {
-    if (!str) return '';
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
 function formatearEnlace(url, plataforma) {
     if (!url) return '';
     let enlace = url.trim();
-    if (enlace.startsWith('http://') || enlace.startsWith('https://')) return sanitize(enlace);
+    if (enlace.startsWith('http://') || enlace.startsWith('https://')) return enlace;
     if (plataforma === 'facebook') {
-        if (enlace.includes('facebook.com')) return sanitize('https://' + enlace);
-        return sanitize('https://www.facebook.com/' + enlace);
+        if (enlace.includes('facebook.com')) return 'https://' + enlace;
+        return 'https://www.facebook.com/' + enlace;
     }
     if (plataforma === 'instagram') {
-        if (enlace.includes('instagram.com')) return sanitize('https://' + enlace);
+        if (enlace.includes('instagram.com')) return 'https://' + enlace;
         enlace = enlace.replace('@', '');
-        return sanitize('https://www.instagram.com/' + enlace);
+        return 'https://www.instagram.com/' + enlace;
     }
-    return sanitize(enlace);
-}
-
-function formatearWhatsapp(numero) {
-    if (!numero) return '';
-    let limpio = numero.replace(/\D/g, ''); 
-    if (!limpio.startsWith('549') && !limpio.startsWith('54')) {
-        limpio = '549' + limpio;
-    }
-    return limpio;
+    return enlace;
 }
 
 // ==========================================
-// MODO OSCURO
+// MODO OSCURO (Dark Mode)
 // ==========================================
 const btnTheme = document.getElementById('btn-theme-toggle');
-if (btnTheme) {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-        btnTheme.innerText = '☀️';
-    }
+const body = document.body;
 
-    btnTheme.addEventListener('click', () => {
-        if (document.body.getAttribute('data-theme') === 'dark') {
-            document.body.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
-            btnTheme.innerText = '🌙';
-        } else {
-            document.body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-            btnTheme.innerText = '☀️';
-        }
-    });
+if (localStorage.getItem('theme') === 'dark') {
+    body.setAttribute('data-theme', 'dark');
+    btnTheme.innerText = '☀️';
 }
 
+btnTheme.addEventListener('click', () => {
+    if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        btnTheme.innerText = '🌙';
+    } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        btnTheme.innerText = '☀️';
+    }
+});
+
 // ==========================================
-// SPA Y PANEL DE USUARIO
+// CONTROL DE VISTAS (SPA)
 // ==========================================
 const vistaDirectorio = document.getElementById('vista-directorio');
 const vistaPanel = document.getElementById('vista-panel');
-const btnNavPanel = document.getElementById('btn-publicar');
+const btnNavPanel = document.getElementById('btn-nav-panel');
 const btnVolverDirectorio = document.getElementById('btn-volver-directorio');
 
 window.abrirPanelGestion = function() {
-    if(vistaDirectorio) vistaDirectorio.classList.add('hidden');
-    if(vistaPanel) vistaPanel.classList.remove('hidden');
-    document.body.classList.add('modo-formulario');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    vistaDirectorio.style.display = 'none';
+    vistaPanel.style.display = 'block';
+    document.body.classList.add('modo-formulario'); // Activa limpieza visual
+    window.scrollTo(0,0);
 }
 
-if(btnNavPanel) btnNavPanel.addEventListener('click', abrirPanelGestion);
+btnNavPanel.addEventListener('click', abrirPanelGestion);
 
-if(btnVolverDirectorio) {
-    btnVolverDirectorio.addEventListener('click', () => {
-        if(vistaPanel) vistaPanel.classList.add('hidden');
-        if(vistaDirectorio) vistaDirectorio.classList.remove('hidden');
-        document.body.classList.remove('modo-formulario');
-        cargarServicios(); 
-    });
-}
+btnVolverDirectorio.addEventListener('click', () => {
+    vistaPanel.style.display = 'none';
+    vistaDirectorio.style.display = 'block';
+    document.body.classList.remove('modo-formulario'); // Desactiva limpieza visual
+    cargarServicios(); 
+});
 
 // ==========================================
-// AUTENTICACIÓN Y PANEL DE CONTROL
+// LÓGICA DEL PANEL DE AUTOGESTIÓN Y AUTH
 // ==========================================
 let documentoIdActual = null; 
 let usuarioActual = null;
-
 const btnLogout = document.getElementById('btn-logout');
-const seccionLogin = document.getElementById('seccion-login');
-const seccionDashboard = document.getElementById('seccion-dashboard');
-const seccionFormulario = document.getElementById('seccion-formulario');
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioActual = user;
-        if(seccionLogin) seccionLogin.classList.add('hidden');
-        if(btnLogout) btnLogout.classList.remove('hidden');
+        document.getElementById('seccion-login').style.display = 'none';
+        btnLogout.style.display = 'inline-block'; 
         mostrarDashboard();
     } else {
+        document.getElementById('seccion-login').style.display = 'flex';
+        document.getElementById('seccion-dashboard').style.display = 'none';
+        document.getElementById('seccion-formulario').style.display = 'none';
+        btnLogout.style.display = 'none'; 
         usuarioActual = null;
-        if(seccionLogin) seccionLogin.classList.remove('hidden');
-        if(seccionDashboard) seccionDashboard.classList.add('hidden');
-        if(seccionFormulario) seccionFormulario.classList.add('hidden');
-        if(btnLogout) btnLogout.classList.add('hidden');
-        
-        const contenedorLista = document.getElementById('lista-mis-servicios');
-        if(contenedorLista) contenedorLista.innerHTML = "";
     }
 });
 
-const btnLogin = document.getElementById('btn-login');
-if(btnLogin) {
-    btnLogin.addEventListener('click', async () => {
-        try { await signInWithPopup(auth, provider); } catch (e) { alert("Error al iniciar sesión con Google."); }
-    });
-}
+document.getElementById('btn-login').addEventListener('click', async () => {
+    try { await signInWithPopup(auth, provider); } catch (e) { alert("Error al iniciar sesión."); }
+});
 
-if(btnLogout) {
-    btnLogout.addEventListener('click', async () => {
-        if(confirm("¿Seguro que deseas cerrar sesión?")) {
-            try {
-                await signOut(auth);
-                if(btnVolverDirectorio) btnVolverDirectorio.click(); 
-            } catch (error) { alert("Error al cerrar sesión."); }
-        }
-    });
-}
-
-// ==========================================
-// TABS DEL DASHBOARD (Anuncios vs Favoritos)
-// ==========================================
-const tabAnuncios = document.getElementById('tab-mis-anuncios');
-const tabFavoritos = document.getElementById('tab-mis-favoritos');
-const contAnuncios = document.getElementById('contenido-mis-anuncios');
-const contFavoritos = document.getElementById('contenido-mis-favoritos');
-
-if(tabAnuncios && tabFavoritos) {
-    tabAnuncios.addEventListener('click', () => {
-        tabAnuncios.classList.add('active');
-        tabFavoritos.classList.remove('active');
-        contAnuncios.classList.remove('hidden');
-        contFavoritos.classList.add('hidden');
-    });
-
-    tabFavoritos.addEventListener('click', () => {
-        tabFavoritos.classList.add('active');
-        tabAnuncios.classList.remove('active');
-        contFavoritos.classList.remove('hidden');
-        contAnuncios.classList.add('hidden');
-        renderizarMisFavoritosDash();
-    });
-}
+btnLogout.addEventListener('click', async () => {
+    if(confirm("¿Seguro que deseas cerrar sesión?")) {
+        try {
+            await signOut(auth);
+            alert("Sesión cerrada correctamente.");
+            document.getElementById('btn-volver-directorio').click(); 
+        } catch (error) { alert("Error al cerrar sesión."); }
+    }
+});
 
 async function mostrarDashboard() {
-    if(seccionFormulario) seccionFormulario.classList.add('hidden');
-    if(seccionDashboard) seccionDashboard.classList.remove('hidden');
-    if(tabAnuncios) tabAnuncios.click();
-    
+    document.getElementById('seccion-formulario').style.display = 'none';
+    document.getElementById('seccion-dashboard').style.display = 'block';
     const contenedorLista = document.getElementById('lista-mis-servicios');
-    if(!contenedorLista) return;
     contenedorLista.innerHTML = "Cargando tus servicios...";
 
-    try {
-        const q = query(collection(db, "servicios"), where("usuarioId", "==", usuarioActual.uid));
-        const querySnapshot = await getDocs(q);
+    const q = query(collection(db, "servicios"), where("usuarioId", "==", usuarioActual.uid));
+    const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-            contenedorLista.innerHTML = "<p style='color: var(--text-muted);'>Aún no tienes servicios publicados.</p>";
-            return;
-        }
-
-        let htmlAcumulado = "";
-        querySnapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            htmlAcumulado += `
-                <div class="item-dashboard fade-in-up">
-                    <div>
-                        <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${sanitize(data.nombre)}</h3>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">${sanitize(data.categoria)}</span>
-                    </div>
-                    <div style="display:flex; gap:0.5rem;">
-                        <button onclick="editarServicio('${docSnap.id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem; border-radius:8px; cursor:pointer; transition: 0.2s;">Editar</button>
-                        <button onclick="borrarServicio('${docSnap.id}')" style="background:#dc2626; color:white; border:none; padding:0.5rem; border-radius:8px; cursor:pointer; transition: 0.2s;">Borrar</button>
-                    </div>
-                </div>
-            `;
-        });
-        contenedorLista.innerHTML = htmlAcumulado;
-    } catch(e) {
-        contenedorLista.innerHTML = "<p style='color: red;'>Error al cargar tus servicios.</p>";
-    }
-}
-
-// Renderizar favoritos en el panel de control
-window.renderizarMisFavoritosDash = function() {
-    const contenedorFavs = document.getElementById('lista-mis-favoritos');
-    if(!contenedorFavs) return;
-    
-    const favs = obtenerFavoritos();
-    if(favs.length === 0) {
-        contenedorFavs.innerHTML = "<p style='color: var(--text-muted);'>Aún no has guardado a ningún profesional.</p>";
+    if (querySnapshot.empty) {
+        contenedorLista.innerHTML = "<p>Aún no tienes servicios publicados.</p>";
         return;
     }
 
-    let htmlAcumulado = "";
-    favs.forEach(id => {
-        const data = window.directorioData[id];
-        if(data) {
-            htmlAcumulado += `
-                <div class="item-dashboard fade-in-up" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${sanitize(data.nombre)}</h3>
-                        <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: bold;">${sanitize(data.categoria)}</span>
-                    </div>
-                    <div style="display:flex; gap:0.5rem;">
-                        <button onclick="cerrarModalPerfil(); abrirModal('${id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Ver Anuncio</button>
-                        <button onclick="toggleFavorito('${id}'); renderizarMisFavoritosDash();" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">❌ Quitar</button>
-                    </div>
+    contenedorLista.innerHTML = "";
+    querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        contenedorLista.innerHTML += `
+            <div class="item-dashboard fade-in-up">
+                <div>
+                    <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${data.nombre}</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">${data.categoria}</span>
                 </div>
-            `;
-        }
+                <div style="display:flex; gap:0.5rem;">
+                    <button onclick="editarServicio('${docSnap.id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem; border-radius:8px; cursor:pointer;">Editar</button>
+                    <button onclick="borrarServicio('${docSnap.id}')" style="background:#dc2626; color:white; border:none; padding:0.5rem; border-radius:8px; cursor:pointer;">Borrar</button>
+                </div>
+            </div>
+        `;
     });
-    contenedorFavs.innerHTML = htmlAcumulado;
 }
 
 window.editarServicio = async function(id) {
     documentoIdActual = id;
-    if(seccionDashboard) seccionDashboard.classList.add('hidden');
-    if(seccionFormulario) seccionFormulario.classList.remove('hidden');
-    document.getElementById('titulo-formulario').innerText = "Cargando datos...";
+    document.getElementById('seccion-dashboard').style.display = 'none';
+    document.getElementById('seccion-formulario').style.display = 'block';
+    document.getElementById('titulo-formulario').innerText = "Editar Servicio";
     
-    try {
-        const docRef = doc(db, "servicios", id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
+    const q = query(collection(db, "servicios"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((docSnap) => {
+        if (docSnap.id === id) {
             const data = docSnap.data();
-            document.getElementById('titulo-formulario').innerText = "Editar Servicio";
             document.getElementById('nombre').value = data.nombre || '';
             document.getElementById('categoria').value = data.categoria || '';
             document.getElementById('ubicacion').value = data.ubicacion || 'A domicilio';
@@ -273,148 +169,72 @@ window.editarServicio = async function(id) {
             document.getElementById('descripcion').value = data.descripcion || '';
             document.getElementById('urgencias').checked = data.urgencias || false;
             document.getElementById('presupuesto').checked = data.presupuesto || false;
-        } else {
-            alert("El servicio no existe o fue borrado.");
-            mostrarDashboard();
         }
-    } catch (error) {
-        alert("Error al obtener los datos del servicio.");
-        mostrarDashboard();
-    }
+    });
 };
 
 window.borrarServicio = async function(id) {
-    if(confirm("¿Seguro que deseas eliminar este servicio definitivamente? Esta acción no se puede deshacer.")) {
+    if(confirm("¿Seguro que deseas eliminar este servicio definitivamente?")) {
         await deleteDoc(doc(db, "servicios", id));
         mostrarDashboard();
     }
 };
 
-const btnCrearNuevo = document.getElementById('btn-crear-nuevo');
-if(btnCrearNuevo) {
-    btnCrearNuevo.addEventListener('click', () => {
-        documentoIdActual = null; 
-        document.getElementById('form-servicio').reset();
-        if(seccionDashboard) seccionDashboard.classList.add('hidden');
-        if(seccionFormulario) seccionFormulario.classList.remove('hidden');
-        document.getElementById('titulo-formulario').innerText = "Nuevo Servicio";
-    });
-}
+document.getElementById('btn-crear-nuevo').addEventListener('click', () => {
+    documentoIdActual = null;
+    document.getElementById('form-servicio').reset();
+    document.getElementById('seccion-dashboard').style.display = 'none';
+    document.getElementById('seccion-formulario').style.display = 'block';
+    document.getElementById('titulo-formulario').innerText = "Nuevo Servicio";
+});
 
-const btnCancelar = document.getElementById('btn-cancelar');
-if(btnCancelar) btnCancelar.addEventListener('click', () => { mostrarDashboard(); });
+document.getElementById('btn-cancelar').addEventListener('click', () => { mostrarDashboard(); });
 
-const formServicio = document.getElementById('form-servicio');
-if(formServicio) {
-    formServicio.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btnSubmit = document.getElementById('btn-guardar');
-        btnSubmit.innerHTML = "⏳ Guardando..."; 
-        btnSubmit.disabled = true;
+document.getElementById('form-servicio').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSubmit = document.getElementById('btn-guardar');
+    btnSubmit.innerText = "Guardando..."; btnSubmit.disabled = true;
 
-        const datos = {
-            nombre: sanitize(document.getElementById('nombre').value),
-            categoria: sanitize(document.getElementById('categoria').value),
-            ubicacion: sanitize(document.getElementById('ubicacion').value),
-            whatsapp: sanitize(document.getElementById('whatsapp').value),
-            instagram: sanitize(document.getElementById('instagram').value),
-            facebook: sanitize(document.getElementById('facebook').value),
-            descripcion: sanitize(document.getElementById('descripcion').value),
-            urgencias: document.getElementById('urgencias').checked,
-            presupuesto: document.getElementById('presupuesto').checked,
-            usuarioId: usuarioActual.uid, 
-            ultimaActualizacion: serverTimestamp()
-        };
+    const datos = {
+        nombre: document.getElementById('nombre').value,
+        categoria: document.getElementById('categoria').value,
+        ubicacion: document.getElementById('ubicacion').value,
+        whatsapp: document.getElementById('whatsapp').value,
+        instagram: document.getElementById('instagram').value,
+        facebook: document.getElementById('facebook').value,
+        descripcion: document.getElementById('descripcion').value,
+        urgencias: document.getElementById('urgencias').checked,
+        presupuesto: document.getElementById('presupuesto').checked,
+        usuarioId: usuarioActual.uid, 
+        ultimaActualizacion: new Date()
+    };
 
-        try {
-            if (documentoIdActual) { 
-                await updateDoc(doc(db, "servicios", documentoIdActual), datos); 
-            } else { 
-                await addDoc(collection(db, "servicios"), datos); 
-            }
-            mostrarDashboard();
-        } catch (error) { 
-            alert("Error al guardar. Por favor, intente nuevamente."); 
-        } finally { 
-            btnSubmit.innerHTML = "Guardar Servicio"; 
-            btnSubmit.disabled = false; 
-        }
-    });
-}
+    try {
+        if (documentoIdActual) { await updateDoc(doc(db, "servicios", documentoIdActual), datos); } 
+        else { await addDoc(collection(db, "servicios"), datos); }
+        mostrarDashboard();
+    } catch (error) { alert("Error al guardar."); } 
+    finally { btnSubmit.innerText = "Guardar Servicio"; btnSubmit.disabled = false; }
+});
 
 // ==========================================
-// LÓGICA DE FAVORITOS Y COMPARTIR CON SVG
+// COMPARTIR PERFIL
 // ==========================================
-
-function obtenerFavoritos() {
-    if(!usuarioActual) return [];
-    return JSON.parse(localStorage.getItem('favs_santa_ana_' + usuarioActual.uid)) || [];
-}
-
-window.toggleFavorito = function(id) {
-    // REGLA: Protegido por autenticación
-    if(!usuarioActual) {
-        alert("👋 Para guardar profesionales en Favoritos, primero debes iniciar sesión.");
-        cerrarModalPerfil();
-        abrirPanelGestion();
-        return;
-    }
-
-    let favs = obtenerFavoritos();
-    const btn = document.getElementById('btn-fav-modal');
-    const svg = btn ? btn.querySelector('svg') : null;
-    const textSpan = btn ? btn.querySelector('#fav-text-modal') : null;
-    
-    if (favs.includes(id)) {
-        // Remover de favoritos
-        favs = favs.filter(favId => favId !== id);
-        if(btn && svg && textSpan) { 
-            btn.classList.remove('es-favorito'); 
-            svg.setAttribute('fill', 'none');
-            svg.setAttribute('stroke', 'currentColor');
-            svg.classList.remove('heart-anim'); 
-            textSpan.innerHTML = 'Guardar'; 
-        }
-    } else {
-        // Agregar a favoritos
-        favs.push(id);
-        if(btn && svg && textSpan) { 
-            btn.classList.add('es-favorito'); 
-            svg.setAttribute('fill', '#ef4444');
-            svg.setAttribute('stroke', '#ef4444');
-            
-            // Forzar repintado para animar
-            void svg.offsetWidth; 
-            svg.classList.add('heart-anim');
-            
-            textSpan.innerHTML = 'Guardado'; 
-        }
-    }
-    
-    localStorage.setItem(`favs_santa_ana_${usuarioActual.uid}`, JSON.stringify(favs));
-};
-
-// REGLA: Compartir construye la URL exacta del modal actual
-window.compartirAnuncio = function(id, nombre, categoria) {
-    // 3. Construye la URL exacta del anuncio
-    const urlCompartir = window.location.origin + window.location.pathname + "?id=" + id;
-    
+window.compartirPerfil = function(nombre, categoria) {
     if (navigator.share) {
         navigator.share({
             title: nombre,
             text: `Mira este profesional en Santa Ana: ${nombre} (${categoria})`,
-            url: urlCompartir
+            url: window.location.href
         }).catch(console.error);
     } else {
-        // Fallback para PC o navegadores que no soportan Web Share API
-        navigator.clipboard.writeText(urlCompartir).then(() => {
-            alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp o en tus redes sociales.");
-        }).catch(err => {
-            console.error("No se pudo copiar el enlace: ", err);
-        });
+        alert("Para compartir, copia la dirección web de esta página.");
     }
 };
 
+// ==========================================
+// VENTANA MODAL (Perfil Completo)
+// ==========================================
 const modalPerfil = document.getElementById('modal-perfil');
 const modalBody = document.getElementById('modal-body');
 
@@ -422,13 +242,8 @@ window.abrirModal = function(id) {
     const data = window.directorioData[id];
     if(!data) return;
 
-    // 1. Actualiza la URL añadiendo ?id=... sin recargar la página
-    const urlConId = window.location.origin + window.location.pathname + "?id=" + id;
-    window.history.pushState({ id: id }, "", urlConId);
-
-    const waNumero = formatearWhatsapp(data.whatsapp);
-    const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
-    const mensajeWA = encodeURIComponent(`Hola ${sanitize(data.nombre)}, vi tu anuncio de ${sanitize(data.categoria)} en el Directorio de Santa Ana. Quería hacerte una consulta...`);
+    const waNumero = data.whatsapp.replace(/\D/g,'');
+    const esDestacado = data.nombre.toLowerCase().includes('nathalia andrada');
     
     let badgesHTML = "";
     if(esDestacado) badgesHTML += `<span class="badge" style="background:#fef08a; color:#854d0e; border: 1px solid #fde047;">⭐ DESTACADO</span>`;
@@ -439,98 +254,62 @@ window.abrirModal = function(id) {
     if (data.instagram || data.facebook) {
         redesHTML += `<div class="redes-sociales" style="margin-top: 1.5rem;">`;
         if (data.instagram) {
-            redesHTML += `<a href="${formatearEnlace(data.instagram, 'instagram')}" target="_blank" rel="noopener noreferrer" class="btn-social btn-ig rounded-button">Instagram</a>`;
+            let igLink = formatearEnlace(data.instagram, 'instagram');
+            redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
         }
         if (data.facebook) {
-            redesHTML += `<a href="${formatearEnlace(data.facebook, 'facebook')}" target="_blank" rel="noopener noreferrer" class="btn-social btn-fb rounded-button">Facebook</a>`;
+            let fbLink = formatearEnlace(data.facebook, 'facebook');
+            redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
         }
         redesHTML += `</div>`;
     }
 
-    const favs = obtenerFavoritos();
-    const esFav = favs.includes(id);
-    const claseFav = esFav ? 'es-favorito' : '';
-    const textoFav = esFav ? 'Guardado' : 'Guardar';
-    const fillSVG = esFav ? '#ef4444' : 'none';
-    const strokeSVG = esFav ? '#ef4444' : 'currentColor';
+    modalBody.innerHTML = `
+        <div class="categoria-tag" style="margin-bottom: 1rem; display: inline-block;">${data.categoria}</div>
+        <h2 style="font-size: 1.6rem; margin-bottom: 0.8rem; color: var(--text-color);">${data.nombre}</h2>
+        ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
+        
+        <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+            <h4 style="margin-bottom: 0.8rem; color: var(--primary-color);">Sobre el servicio</h4>
+            <p style="color: var(--text-color); line-height: 1.6; white-space: pre-line;">${data.descripcion}</p>
+        </div>
+        
+        <div class="info-extra" style="font-size: 1rem; border: none; padding: 0;">
+            <p style="margin-bottom: 0.5rem;"><strong>📍 Modalidad:</strong> ${data.ubicacion || 'Consultar'}</p>
+        </div>
+        
+        ${redesHTML}
+        
+        <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio%20de%20Santa%20Ana" target="_blank" class="btn-whatsapp rounded-button-large pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
+            📲 Enviar WhatsApp
+        </a>
+    `;
 
-    // Inyecta el contenido. Botones interactivos con SVG al final del modal.
-    if(modalBody) {
-        modalBody.innerHTML = `
-            <div style="padding-right: 30px;">
-                <div class="categoria-tag" style="margin-bottom: 0.5rem; display: inline-block;">${sanitize(data.categoria)}</div>
-                <h2 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 0.5rem;">${sanitize(data.nombre)}</h2>
-            </div>
-            
-            ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
-            
-            <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color);">
-                <h4 style="margin-bottom: 0.8rem; color: var(--primary-color);">Sobre el servicio</h4>
-                <p style="color: var(--text-color); line-height: 1.6; white-space: pre-line;">${sanitize(data.descripcion)}</p>
-            </div>
-            
-            <div class="info-extra" style="font-size: 1rem; border: none; padding: 0;">
-                <p style="margin-bottom: 0.5rem;"><strong>📍 Modalidad:</strong> ${sanitize(data.ubicacion || 'Consultar')}</p>
-            </div>
-            
-            ${redesHTML}
-            
-            <div style="display: flex; gap: 10px; margin-top: 1.5rem; margin-bottom: 15px;">
-                <button class="btn-modal-action" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')" style="flex: 1; padding: 12px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                    <span>Compartir</span>
-                </button>
-
-                <button id="btn-fav-modal" class="btn-modal-action btn-fav-action ${claseFav}" onclick="toggleFavorito('${id}')" style="flex: 1; padding: 12px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${fillSVG}" stroke="${strokeSVG}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg heart-svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    <span id="fav-text-modal">${textoFav}</span>
-                </button>
-            </div>
-
-            <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp rounded-button pulse-subtle">
-                💬 Consultar por WhatsApp
-            </a>
-        `;
-    }
-
-    if(modalPerfil) {
-        modalPerfil.classList.remove('hidden');
-        void modalPerfil.offsetWidth; 
-        modalPerfil.classList.add('active');
-        document.body.classList.add('modal-open');
-    }
+    modalPerfil.style.display = 'flex';
+    void modalPerfil.offsetWidth; 
+    modalPerfil.classList.add('active');
+    document.body.classList.add('modal-open');
 };
 
-window.cerrarModalPerfil = function() {
-    if(!modalPerfil) return;
+document.getElementById('btn-cerrar-modal').addEventListener('click', cerrarModalPerfil);
+modalPerfil.addEventListener('click', (e) => {
+    if(e.target === modalPerfil) cerrarModalPerfil();
+});
+
+function cerrarModalPerfil() {
     modalPerfil.classList.remove('active');
     document.body.classList.remove('modal-open');
-    setTimeout(() => { modalPerfil.classList.add('hidden'); }, 300);
-    
-    // 2. Limpia la URL volviendo a la ruta base sin el ?id
-    const urlLimpia = window.location.origin + window.location.pathname;
-    window.history.pushState({}, "", urlLimpia);
-};
-
-const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-if(btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModalPerfil);
-
-if(modalPerfil) {
-    modalPerfil.addEventListener('click', (e) => {
-        if(e.target === modalPerfil) cerrarModalPerfil();
-    });
+    setTimeout(() => { modalPerfil.style.display = 'none'; }, 300);
 }
 
 // ==========================================
-// DIRECTORIO Y CARGA DE DATOS
+// DIRECTORIO, BUSCADOR Y FILTROS
 // ==========================================
 const listaServicios = document.getElementById('lista-servicios');
 const contadorTexto = document.getElementById('contador-profesionales');
 let filtroActivo = ""; 
 
 async function cargarServicios() {
-    if(!listaServicios) return;
-    
     listaServicios.innerHTML = `
         <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
     `;
@@ -540,28 +319,25 @@ async function cargarServicios() {
         listaServicios.innerHTML = ""; 
         window.directorioData = {}; 
         
-        if(contadorTexto) {
-            contadorTexto.innerText = `⭐ Ya somos ${querySnapshot.size} profesionales listos para ayudarte`;
-        }
+        const cantidad = querySnapshot.size;
+        contadorTexto.innerText = `⭐ Ya somos ${cantidad} profesionales listos para ayudarte`;
 
         const tarjetaCtaHTML = `
             <article class="tarjeta-servicio tarjeta-cta-unirse fade-in-up professional-card" 
-                     onclick="event.stopPropagation(); window.abrirPanelGestion();">
+                     onclick="event.stopPropagation(); abrirPanelGestion();">
                 <div class="centrado" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <span style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">🚀</span>
-                    <h2 style="font-size: 1.3rem; color: var(--text-color); margin-bottom: 0.5rem; text-align: center;">Conseguí clientes hoy mismo</h2>
+                    <span style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">➕</span>
+                    <h2 style="font-size: 1.25rem; color: var(--text-color); margin-bottom: 0.5rem; text-align: center;">¿Ofreces un servicio en Santa Ana?</h2>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center;">
-                        Publicá gratis en 2 minutos. Plomeros, electricistas, docentes... ¡Sumá ingresos desde hoy!
+                        Plomeros, electricistas, docentes, etc... ¡Sumate al directorio gratis y hacete ver por tus vecinos!
                     </p>
-                    <button class="btn-whatsapp rounded-button pulse-subtle" style="background: var(--primary-color); width: auto; display:inline-block; padding: 10px 20px;">Publicar mi servicio Gratis</button>
+                    <button class="btn-whatsapp rounded-button-large pulse-subtle" style="background: var(--primary-color); width: auto; display:inline-block; padding: 10px 20px;">Sumarme Ahora Gratis</button>
                 </div>
             </article>
         `;
+        listaServicios.innerHTML += tarjetaCtaHTML;
 
-        if (querySnapshot.empty) { 
-            listaServicios.innerHTML = tarjetaCtaHTML;
-            return; 
-        }
+        if (querySnapshot.empty) { return; }
 
         let delayAnimacion = 0.1; 
         let htmlDestacados = "";
@@ -570,29 +346,57 @@ async function cargarServicios() {
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             window.directorioData[docSnap.id] = data; 
+            const waNumero = data.whatsapp.replace(/\D/g,''); 
+            const esDestacado = data.nombre.toLowerCase().includes('nathalia andrada');
             
-            const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
+            let badgesHTML = "";
+            if(esDestacado) badgesHTML += `<span class="badge" style="background:#fef08a; color:#854d0e; border: 1px solid #fde047;">⭐ DESTACADO</span>`;
+            if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 24hs</span>`;
+            if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 Sin Cargo</span>`;
+
+            let redesHTML = "";
+            if (data.instagram || data.facebook) {
+                redesHTML += `<div class="redes-sociales">`;
+                if (data.instagram) {
+                    let igLink = formatearEnlace(data.instagram, 'instagram');
+                    redesHTML += `<a href="${igLink}" target="_blank" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
+                }
+                if (data.facebook) {
+                    let fbLink = formatearEnlace(data.facebook, 'facebook');
+                    redesHTML += `<a href="${fbLink}" target="_blank" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
+                }
+                redesHTML += `</div>`;
+            }
+
+            const esOnline = data.ubicacion.includes('Online') ? 'true' : 'false';
+            const esDomicilio = data.ubicacion.includes('domicilio') ? 'true' : 'false';
             const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
 
-            // REGLA: Tarjetas completamente limpias de botones, 100% interactuables
+            const shareIcon = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
+
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up ${claseAdicional}" 
                          style="animation-delay: ${delayAnimacion}s;"
                          onclick="abrirModal('${docSnap.id}')"
-                         data-id="${docSnap.id}"
-                         data-nombre="${sanitize(data.nombre)}"
-                         data-categoria="${sanitize(data.categoria)}"
-                         data-descripcion="${sanitize(data.descripcion)}"
                          data-urgencias="${data.urgencias || false}"
-                         data-online="${(data.ubicacion || "").toLowerCase().includes('online') ? 'true' : 'false'}"
-                         data-domicilio="${(data.ubicacion || "").toLowerCase().includes('domicilio') ? 'true' : 'false'}">
-                    
-                    <div class="categoria-tag">${sanitize(data.categoria)}</div>
-                    <h2>${sanitize(data.nombre)}</h2>
-                    <p class="descripcion">${sanitize(data.descripcion)}</p>
-                    <div class="info-extra">
-                        <span>📍 ${sanitize(data.ubicacion || 'Consultar')}</span>
+                         data-online="${esOnline}"
+                         data-domicilio="${esDomicilio}">
+                    <div class="card-header">
+                        <div class="categoria-tag">${data.categoria}</div>
+                        <button class="btn-share" onclick="event.stopPropagation(); compartirPerfil('${data.nombre}', '${data.categoria}')" title="Compartir Perfil">
+                            ${shareIcon}
+                        </button>
                     </div>
+                    <h2>${data.nombre}</h2>
+                    ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
+                    <p class="descripcion">${data.descripcion}</p>
+                    <div class="info-extra">
+                        <span>📍 ${data.ubicacion || 'Consultar'}</span>
+                    </div>
+                    ${redesHTML}
+                    <a href="https://wa.me/${waNumero}?text=Hola,%20vi%20tu%20perfil%20en%20el%20directorio" target="_blank" class="btn-whatsapp pulse-subtle" onclick="event.stopPropagation();">
+                        Contactar
+                    </a>
                 </article>
             `;
             
@@ -600,73 +404,31 @@ async function cargarServicios() {
             else htmlNormales += tarjetaHTML;
             delayAnimacion += 0.1; 
         });
-        
-        listaServicios.innerHTML = tarjetaCtaHTML + htmlDestacados + htmlNormales;
+        listaServicios.innerHTML += htmlDestacados + htmlNormales;
 
-        // 4. Lógica de Deep Linking: Leer URL y auto-abrir modal
-        setTimeout(() => {
-            const parametrosUrl = new URLSearchParams(window.location.search);
-            const idCompartido = parametrosUrl.get('id');
-            
-            // Verifica si existe el parámetro ?id y si ese ID está en la base de datos descargada
-            if (idCompartido && window.directorioData && window.directorioData[idCompartido]) {
-                abrirModal(idCompartido);
-            }
-        }, 300);
-
-    } catch (error) { 
-        listaServicios.innerHTML = "<p style='color: red; text-align:center;'>Error de conexión. Intente refrescar la página.</p>"; 
-    }
+    } catch (error) { listaServicios.innerHTML = "<p style='color: red;'>Error de conexión.</p>"; }
 }
 
 function aplicarFiltros() {
-    const buscador = document.getElementById('buscador');
-    const textoBusqueda = buscador ? quitarAcentos(buscador.value.toLowerCase().trim()) : '';
-    const terminosBusqueda = textoBusqueda.split(' ').filter(termino => termino.length > 0);
-    
+    const textoBusqueda = document.getElementById('buscador').value.toLowerCase();
     const tarjetas = document.querySelectorAll('.tarjeta-servicio');
-    let tarjetasVisibles = 0;
 
     tarjetas.forEach(tarjeta => {
         if(tarjeta.classList.contains('tarjeta-cta-unirse')) return;
-        
-        const contenido = quitarAcentos((tarjeta.dataset.nombre + " " + tarjeta.dataset.categoria + " " + tarjeta.dataset.descripcion).toLowerCase());
-        const coincideTexto = terminosBusqueda.every(termino => contenido.includes(termino));
-        
+        const contenido = tarjeta.innerText.toLowerCase();
+        const coincideTexto = contenido.includes(textoBusqueda);
         let coincideFiltroRapido = true;
         if (filtroActivo === 'urgencias') coincideFiltroRapido = tarjeta.dataset.urgencias === 'true';
         if (filtroActivo === 'online') coincideFiltroRapido = tarjeta.dataset.online === 'true';
         if (filtroActivo === 'domicilio') coincideFiltroRapido = tarjeta.dataset.domicilio === 'true';
-        
-        if ((coincideTexto || terminosBusqueda.length === 0) && coincideFiltroRapido) {
-            tarjeta.classList.remove('hidden');
-            tarjetasVisibles++;
-        } else {
-            tarjeta.classList.add('hidden');
-        }
-    });
-
-    const msjSinResultados = document.getElementById('mensaje-sin-resultados');
-    if (msjSinResultados) {
-        if (tarjetasVisibles === 0 && tarjetas.length > 1) { 
-            msjSinResultados.classList.remove('hidden');
-        } else {
-            msjSinResultados.classList.add('hidden');
-        }
-    }
-}
-
-let timeoutBusqueda;
-const inputBuscador = document.getElementById('buscador');
-if(inputBuscador) {
-    inputBuscador.addEventListener('input', () => {
-        clearTimeout(timeoutBusqueda);
-        timeoutBusqueda = setTimeout(aplicarFiltros, 300);
+        tarjeta.style.display = (coincideTexto && coincideFiltroRapido) ? 'flex' : 'none';
     });
 }
+
+document.getElementById('buscador').addEventListener('input', aplicarFiltros);
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
         if (btn.classList.contains('active')) {
             btn.classList.remove('active');
             filtroActivo = "";
