@@ -45,13 +45,11 @@
     transition: background-color 0.3s, color 0.3s, border-color 0.3s; 
 }
 
-/* Scrollbar Personalizado App Nativa */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-color); }
 ::-webkit-scrollbar-thumb { background: rgba(2, 119, 189, 0.4); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
 
-/* Anillos de Enfoque Accesibles */
 *:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 
 body { 
@@ -66,37 +64,16 @@ body.modal-open { overflow: hidden; }
     width: 100%; max-width: 1200px; margin: 2rem auto; padding: 0 1rem; flex: 1;
 }
 
-/* Glassmorphism Header Premium con UX Mercado Libre */
 .header { 
     background: var(--header-grad); color: #fff; padding: 1.5rem 1rem 2rem 1rem; 
-    text-align: center; position: sticky; top: 0; z-index: 1000;
+    text-align: center; position: sticky; top: 0; z-index: 100;
     border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; 
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-
-/* ESTADO COLAPSADO (SCROLL) */
-.header.scrolled {
-    padding: 0.8rem 1rem;
-    border-radius: 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
-
-.header.scrolled .collapse-on-scroll {
-    display: none !important;
-}
-
-.header.scrolled .search-container {
-    margin-bottom: 0;
-}
-
-.header.scrolled .search-container input {
-    padding: 0.8rem 1.2rem;
-}
 
 .header-top { 
     display: flex; justify-content: flex-end; align-items: center; gap: 0.8rem; 
@@ -128,41 +105,15 @@ body.modal-open { overflow: hidden; }
 .filter-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;}
 .filter-btn.active { background: #fff; color: var(--primary-color); border-color: #fff; }
 
-/* BANNER PROMOCIONAL */
-.banner-cta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(135deg, #fefce8 0%, #fef08a 100%);
-    border: 1px solid #fde047;
-    border-radius: 16px;
-    padding: 1.2rem 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-sm);
+.grid-servicios { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 1.5rem; 
 }
-[data-theme="dark"] .banner-cta {
-    background: linear-gradient(135deg, #332701 0%, #713f12 100%);
-    border-color: #854d0e;
+@media (min-width: 600px) {
+    .grid-servicios { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 }
-.banner-info h3 { font-size: 1.2rem; color: #854d0e; margin-bottom: 0.3rem;}
-[data-theme="dark"] .banner-info h3 { color: #fef08a;}
-.banner-info p { font-size: 0.9rem; color: var(--text-muted); }
-.btn-primario-sm {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 10px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: filter 0.2s;
-}
-.btn-primario-sm:hover { filter: brightness(1.1); }
 
-.grid-servicios { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-
-/* Micro-interacciones de Tarjetas */
 .tarjeta-servicio { 
     background: var(--card-bg); border-radius: 20px; padding: 1.8rem; cursor: pointer;
     box-shadow: var(--shadow-sm); display: flex; flex-direction: column; 
@@ -175,11 +126,14 @@ body.modal-open { overflow: hidden; }
     border-color: var(--primary-color); 
 }
 
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;}
-.categoria-tag { background-color: rgba(2, 119, 189, 0.1); color: var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-.btn-share { background: none; border: none; cursor: pointer; color: var(--text-muted); opacity: 0.6; padding: 5px; transition: transform 0.2s; }
-.btn-share:hover { opacity: 1; transform: scale(1.1); color: var(--primary-color);}
+.tarjeta-cta-unirse {
+    border: 2px dashed #cbd5e0; 
+    border-top: 5px dashed var(--primary-color); 
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--cta-bg-end) 100%);
+    justify-content: center; align-items: center; text-align: center;
+}
 
+.categoria-tag { background-color: rgba(2, 119, 189, 0.1); color: var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-bottom: 0.8rem; }
 .tarjeta-servicio h2 { font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 700; color: var(--text-color);}
 .descripcion { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.2rem; flex-grow: 1; line-height: 1.5; 
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
@@ -189,6 +143,7 @@ body.modal-open { overflow: hidden; }
 .badge { font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.6rem; border-radius: 8px; }
 .badge-red { background-color: rgba(220, 38, 38, 0.1); color: #dc2626; }
 .badge-blue { background-color: rgba(2, 132, 199, 0.1); color: #0284c7; }
+.badge-destacado { background-color: var(--badge-destacado-bg); color: var(--badge-destacado-color); border: 1px solid var(--badge-destacado-border); }
 
 .info-extra { font-size: 0.85rem; margin-bottom: 1.2rem; color: var(--text-muted); font-weight: 600; padding-top: 1rem; border-top: 1px solid var(--border-color);}
 
@@ -197,7 +152,6 @@ body.modal-open { overflow: hidden; }
 .btn-ig { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
 .btn-fb { background: #1877f2; }
 
-/* Botones con Neuromarketing */
 .btn-whatsapp { 
     background: linear-gradient(135deg, #25d366 0%, #16a34a 100%); color: #fff; text-align: center; 
     padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: block; border: none; cursor: pointer; box-shadow: var(--shadow-sm); width: 100%;
@@ -207,7 +161,9 @@ body.modal-open { overflow: hidden; }
 .btn-whatsapp:active { transform: translateY(1px); }
 .btn-whatsapp:disabled { background: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
 
-/* Modal Inteligente */
+/* ==========================================
+   MODAL
+   ========================================== */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -218,15 +174,120 @@ body.modal-open { overflow: hidden; }
 .modal-content {
     background: var(--card-bg); width: 100%; max-width: 600px; 
     max-height: 90vh; overflow-y: auto; 
-    border-radius: 20px; padding: 2rem;
+    border-radius: 20px; padding: 2.5rem 2rem 2rem 2rem; 
     position: relative; transform: scale(0.95); transition: transform 0.3s ease;
     box-shadow: var(--shadow-lg); border-top: 5px solid var(--primary-color);
 }
 .modal-overlay.active .modal-content { transform: scale(1); }
+
+/* X bien aislada: posición absoluta, fuera del flujo del contenido */
 .btn-close {
-    position: absolute; top: 15px; right: 20px; background: none; border: none;
-    font-size: 2rem; color: var(--text-muted); cursor: pointer; line-height: 1; z-index: 10;
+    position: absolute; top: 14px; right: 14px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    font-size: 1.25rem; color: var(--text-muted); cursor: pointer;
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    z-index: 10;
+    line-height: 1;
 }
+.btn-close:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+
+/* ==========================================
+   BOTONES DE ACCIÓN DEL MODAL (Fav + Compartir)
+   ========================================== */
+
+/* Fila de acciones: se ubica justo antes del CTA de WhatsApp */
+.modal-actions-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Base compartida */
+.btn-modal-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.75rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-modal-action:hover {
+    background: var(--border-color);
+    color: var(--text-color);
+}
+
+/* Botón Compartir */
+.btn-share:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    background: rgba(2, 119, 189, 0.06);
+}
+
+/* ==========================================
+   SVG HEART — estado vacío y relleno
+   ========================================== */
+
+/* El SVG hereda el color del botón padre */
+.fav-svg {
+    flex-shrink: 0;
+    /* La transición de fill/stroke debe declararse en el elemento SVG
+       porque 'transition: all' en * no cubre propiedades SVG en todos los motores */
+    transition: fill 0.2s ease, stroke 0.2s ease, color 0.2s ease;
+}
+
+/* Estado: guardado */
+.btn-fav-icon.es-favorito {
+    color: #ef4444;
+    border-color: #fca5a5;
+    background: #fee2e2;
+
+    /* Animación pop al momento de activarse */
+    animation: heartPop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Forzamos fill rojo en el SVG cuando el botón está activo.
+   No usamos 'fill: currentColor' en el keyframe porque currentColor
+   no interpola bien en todos los navegadores.  */
+.btn-fav-icon.es-favorito .fav-svg {
+    fill: #ef4444;
+    stroke: #ef4444;
+}
+
+/* Efecto pop: escala up → down → reposo */
+@keyframes heartPop {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.3); }
+    65%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+}
+
+/* Hover sobre el botón de fav cuando NO está activo: pre-visualización */
+.btn-fav-icon:not(.es-favorito):hover {
+    color: #ef4444;
+    border-color: #fca5a5;
+    background: #fff1f2;
+}
+
+/* ==========================================
+   TABS DASHBOARD
+   ========================================== */
+.dashboard-tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); }
+.tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
+.tab-btn:hover { color: var(--primary-color); }
+.tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 
 .form-container { max-width: 650px; margin: 0 auto; width: 100%; }
 .formulario-estilizado { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
@@ -243,30 +304,18 @@ body.modal-open { overflow: hidden; }
 .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; transform: translateY(20px); }
 @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
-/* Mejor Skeleton Loader */
 .skeleton { background: var(--input-bg); border-radius: 20px; padding: 1.8rem; height: 350px; border-top: 5px solid var(--border-color); position: relative; overflow: hidden; }
 .skeleton::after { content: ""; position: absolute; top: 0; left: -150%; width: 150%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); animation: shimmer 2s infinite ease-in-out; }
 @keyframes shimmer { 100% { left: 100%; } }
 
 .footer { text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); font-size: 0.9rem; border-top: 1px solid var(--border-color); background: var(--card-bg); width: 100%; }
+.tarjeta-destacada { border-top: 5px solid #eab308 !important; background: linear-gradient(180deg, var(--destacado-bg-start) 0%, var(--card-bg) 100%); box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2); }
 
-.tarjeta-destacada {
-    border-top: 5px solid #eab308 !important; 
-    background: linear-gradient(180deg, var(--destacado-bg-start) 0%, var(--card-bg) 100%);
-    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
-}
-
-/* Limpieza Mobile Formularios */
 body.modo-formulario .header { position: relative; padding-bottom: 1.5rem; }
-body.modo-formulario .search-container,
-body.modo-formulario .quick-filters,
-body.modo-formulario .trust-counter,
-body.modo-formulario .location-text { display: none !important; }
+body.modo-formulario .search-container, body.modo-formulario .quick-filters, body.modo-formulario .trust-counter, body.modo-formulario .location-text { display: none !important; }
 
-/* UX ADAPTATIVA MÓVIL EXTREMA */
 @media (max-width: 768px) {
-    /* Mantenemos el header sticky también en móviles, pero más compacto gracias al collapse */
-    
+    .header { position: relative !important; padding-bottom: 1.5rem; }
     .ocultar-movil { display: none; }
     .header-top { gap: 0.5rem; }
     .btn-publicar, .btn-sugerencias-header { padding: 0.5rem 0.8rem; }
@@ -274,136 +323,8 @@ body.modo-formulario .location-text { display: none !important; }
     .item-dashboard { flex-direction: column; align-items: flex-start; }
     .item-dashboard > div:last-child { width: 100%; display: flex; gap: 0.5rem; }
     .item-dashboard button { flex: 1; }
-    
-    /* Grilla de 2 columnas para maximizar visualización */
-    .grid-servicios { 
-        grid-template-columns: repeat(2, 1fr); 
-        gap: 0.8rem; 
-    }
-    
-    /* Compactar la tarjeta */
-    .tarjeta-servicio { padding: 1rem; }
-    .tarjeta-servicio h2 { 
-        font-size: 1rem; 
-        line-height: 1.2;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Ocultar descripción larga para encajar a 2 columnas */
-    .descripcion { display: none; }
-    
-    /* Ajustes visuales de tags y botones */
-    .categoria-tag { font-size: 0.65rem; padding: 0.3rem 0.5rem; }
-    .badges-container { flex-direction: column; gap: 0.3rem; }
-    .btn-whatsapp { padding: 0.7rem; font-size: 0.85rem; }
 
-    /* Adaptar banner CTA */
-    .banner-cta { flex-direction: column; text-align: center; gap: 1rem; padding: 1rem; }
-    .btn-primario-sm { width: 100%; }
-}
-
-/* ==========================================
-   UI POLISH & MICRO-INTERACCIONES
-   ========================================== */
-
-/* Mejoramos el hover y la sombra de las tarjetas para reducir carga cognitiva */
-.tarjeta-servicio {
-    position: relative; /* Necesario para el botón de favoritos absoluto */
-    padding: 1.5rem;
-    border-radius: 24px; /* Bordes un poco más suaves, estilo app nativa */
-    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
-}
-
-/* Áreas táctiles más grandes para celulares (Mínimo 44px) */
-.btn-whatsapp, .btn-primario-sm {
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* --- BOTÓN FAVORITOS (CORAZÓN ESTILO MELI) --- */
-.btn-favorito {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 10;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    backdrop-filter: blur(4px);
-}
-[data-theme="dark"] .btn-favorito {
-    background: rgba(30, 41, 59, 0.9);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-}
-.btn-favorito:active { transform: scale(0.8); }
-.btn-favorito.activo { color: #ef4444; } /* Corazón rojo */
-.btn-favorito.activo i { animation: latido 0.3s ease-in-out; }
-
-@keyframes latido {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1); }
-}
-
-/* --- BOTÓN COMPARTIR --- */
-.acciones-secundarias {
-    display: flex;
-    gap: 0.8rem;
-    margin-top: 1rem;
-}
-.btn-compartir {
-    background: var(--input-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    padding: 0 1rem;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-    min-height: 48px;
-}
-.btn-compartir:hover { background: var(--border-color); }
-
-/* --- TOAST NOTIFICACIÓN (Aviso de Login) --- */
-.toast-notificacion {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    padding: 12px 20px;
-    border-radius: 100px; /* Estilo píldora */
-    z-index: 9999;
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    width: 90%;
-    max-width: 400px;
-}
-.toast-notificacion.visible {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-}
-.toast-contenido {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.9rem;
-    font-weight: 500;
+    /* En móvil los botones de acción ocupan todo el ancho */
+    .modal-actions-row { flex-direction: row; }
+    .btn-modal-action { font-size: 0.85rem; padding: 0.7rem 0.5rem; }
 }

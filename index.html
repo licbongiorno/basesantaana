@@ -11,22 +11,22 @@
 <body>
 
     <header class="header" id="main-header">
-        <div class="header-top collapse-on-scroll">
+        <div class="header-top">
             <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio" target="_blank" rel="noopener noreferrer" class="btn-sugerencias-header" title="Sugerencias" aria-label="Enviar sugerencias por WhatsApp">
                 💡<span class="ocultar-movil"> Sugerencias</span>
             </a>
-            <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil y administración">👤<span class="ocultar-movil"> Mi Perfil / Administrar</span></button>
+            <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil y administración">👤<span class="ocultar-movil"> Mi Perfil / Favoritos</span></button>
             <button id="btn-theme-toggle" class="btn-icon" title="Cambiar modo oscuro/claro" aria-label="Alternar tema oscuro y claro">🌙</button>
         </div>
         
         <div class="header-content">
-            <h1 class="logo-text collapse-on-scroll">Directorio de Servicios</h1>
-            <h2 class="location-text collapse-on-scroll">Villa Parque Santa Ana</h2>
-            <p id="contador-profesionales" class="trust-counter collapse-on-scroll">Cargando comunidad...</p>
+            <h1 class="logo-text">Directorio de Servicios</h1>
+            <h2 class="location-text">Villa Parque Santa Ana</h2>
+            <p id="contador-profesionales" class="trust-counter">Cargando comunidad...</p>
             
-            <div class="search-container sticky-search">
+            <div class="search-container">
                 <label for="buscador" class="sr-only" style="display:none;">Buscar servicio</label>
-                <input list="sugerencias-busqueda" id="buscador" placeholder="🔍 ¿Qué buscás hoy? (ej. Plomero, Psicología)">
+                <input list="sugerencias-busqueda" id="buscador" placeholder="🔍 ¿Qué experto necesitas hoy? (ej. Plomero, Psicología)">
                 <datalist id="sugerencias-busqueda">
                     <option value="Psicología"></option>
                     <option value="Plomería y Gas"></option>
@@ -40,7 +40,7 @@
                 </datalist>
             </div>
 
-            <div class="quick-filters collapse-on-scroll">
+            <div class="quick-filters">
                 <button class="filter-btn" data-filter="urgencias">🚨 24hs</button>
                 <button class="filter-btn" data-filter="online">💻 Online</button>
                 <button class="filter-btn" data-filter="domicilio">🏡 A Domicilio</button>
@@ -50,17 +50,8 @@
 
     <main class="container">
         <div id="vista-directorio">
-            
-            <div id="banner-promocional" class="banner-cta fade-in-up">
-                <div class="banner-info">
-                    <h3>🚀 ¡Anunciate gratis hoy!</h3>
-                    <p>Sumá tu servicio al directorio y potenciá tu alcance en la zona.</p>
+            <div id="lista-servicios" class="grid-servicios">
                 </div>
-                <button id="btn-publicar-banner" class="btn-primario-sm">Publicar mi servicio</button>
-            </div>
-
-            <div id="lista-servicios" class="grid-servicios"></div>
-            
             <div id="mensaje-sin-resultados" class="hidden fade-in-up" style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
                 <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem; opacity: 0.8;">🔎</span>
                 <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.3rem;">No encontramos lo que buscás</h3>
@@ -75,17 +66,29 @@
             </div>
             
             <div id="seccion-login" class="tarjeta-servicio centrado professional-card">
-                <h2 style="text-align: center;">Ingresá para gestionar tu perfil</h2>
-                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem; text-align: center;">Necesitas loguearte con Google para agregar, editar o borrar tus publicaciones o guardar favoritos.</p>
+                <h2 style="text-align: center;">Tu cuenta en Santa Ana</h2>
+                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem; text-align: center;">Iniciá sesión con Google para publicar tus servicios o guardar a tus profesionales favoritos.</p>
                 <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1.5rem;">Continuar con Google</button>
             </div>
 
             <div id="seccion-dashboard" class="hidden">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2>Mis Servicios Publicados</h2>
-                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar Nuevo</button>
+                <div class="dashboard-tabs">
+                    <button id="tab-mis-anuncios" class="tab-btn active">Mis Anuncios</button>
+                    <button id="tab-mis-favoritos" class="tab-btn">❤️ Favoritos</button>
                 </div>
-                <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+
+                <div id="contenido-mis-anuncios">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="font-size: 1.2rem;">Servicios Publicados</h2>
+                        <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer; padding: 0.5rem 1rem;">+ Nuevo</button>
+                    </div>
+                    <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+
+                <div id="contenido-mis-favoritos" class="hidden">
+                    <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Profesionales Guardados</h2>
+                    <div id="lista-mis-favoritos" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
             </div>
 
             <div id="seccion-formulario" class="tarjeta-servicio professional-card fade-in-up hidden">
