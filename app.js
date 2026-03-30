@@ -59,7 +59,6 @@ function formatearWhatsapp(numero) {
     return limpio;
 }
 
-// Función global para mostrar el cartelito
 window.mostrarToast = function(mensaje) {
     let toast = document.getElementById('toast-msg');
     if (!toast) {
@@ -76,15 +75,6 @@ window.mostrarToast = function(mensaje) {
 };
 
 // ==========================================
-// SVG ICONS
-// ==========================================
-const SVG_HEART_EMPTY = `<svg class="fav-svg" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-
-const SVG_HEART_FILLED = `<svg class="fav-svg fav-svg--filled" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-
-const SVG_SHARE = `<svg class="share-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
-
-// ==========================================
 // MODO OSCURO
 // ==========================================
 const btnTheme = document.getElementById('btn-theme-toggle');
@@ -93,7 +83,6 @@ if (btnTheme) {
         document.body.setAttribute('data-theme', 'dark');
         btnTheme.innerText = '☀️';
     }
-
     btnTheme.addEventListener('click', () => {
         if (document.body.getAttribute('data-theme') === 'dark') {
             document.body.removeAttribute('data-theme');
@@ -147,7 +136,6 @@ const seccionFormulario = document.getElementById('seccion-formulario');
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioActual = user;
-        
         try {
             const userDocRef = doc(db, "usuarios", user.uid);
             const userDoc = await getDoc(userDocRef);
@@ -281,7 +269,7 @@ window.renderizarMisFavoritosDash = function() {
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button onclick="cerrarModalPerfil(); abrirModal('${id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Ver Anuncio</button>
-                        <button onclick="toggleFavorito('${id}');" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Quitar</button>
+                        <button onclick="toggleFavorito('${id}'); renderizarMisFavoritosDash();" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Quitar</button>
                     </div>
                 </div>
             `;
@@ -384,7 +372,6 @@ if(formServicio) {
 // ==========================================
 // VENTANA MODAL, FAVORITOS Y COMPARTIR
 // ==========================================
-
 function obtenerFavoritos() {
     return window.misFavoritos || [];
 }
@@ -408,35 +395,18 @@ window.toggleFavorito = async function(id) {
             mostrarToast("❤️ Agregado a favoritos");
         }
         
-        // Sincronizar nube
         await setDoc(userDocRef, { favoritos: window.misFavoritos }, { merge: true });
 
-        // Actualizar botón de la tarjeta en el directorio
-        const cardFavBtn = document.querySelector(`.tarjeta-servicio[data-id="${id}"] .btn-fav-card`);
-        if (cardFavBtn) {
-            if (!estaEnFavs) {
-                cardFavBtn.classList.add('active');
-                cardFavBtn.innerHTML = SVG_HEART_FILLED;
-            } else {
-                cardFavBtn.classList.remove('active');
-                cardFavBtn.innerHTML = SVG_HEART_EMPTY;
-            }
-        }
-
-        // Actualizar botón del modal si está abierto
         const btnModal = document.getElementById('btn-fav-modal');
         if (btnModal) {
             const esFavAhora = !estaEnFavs;
             if (esFavAhora) {
-                btnModal.classList.add('es-favorito');
-                btnModal.innerHTML = SVG_HEART_FILLED + '<span class="fav-label">Guardado</span>';
+                btnModal.innerHTML = '❤️ Quitar Favorito';
             } else {
-                btnModal.classList.remove('es-favorito');
-                btnModal.innerHTML = SVG_HEART_EMPTY + '<span class="fav-label">Guardar</span>';
+                btnModal.innerHTML = '🤍 Guardar Favorito';
             }
         }
 
-        // Refrescar lista de favoritos en el panel si el usuario está mirándola
         const contFavoritos = document.getElementById('contenido-mis-favoritos');
         if (contFavoritos && !contFavoritos.classList.contains('hidden')) {
             renderizarMisFavoritosDash();
@@ -449,7 +419,6 @@ window.toggleFavorito = async function(id) {
 
 window.compartirAnuncio = function(id, nombre, categoria) {
     const urlCompartir = window.location.origin + window.location.pathname + '?id=' + id;
-
     if (navigator.share) {
         navigator.share({
             title: nombre,
@@ -499,9 +468,7 @@ window.abrirModal = function(id) {
 
     const favs = obtenerFavoritos();
     const esFav = favs.includes(id);
-    const svgCorazon = esFav ? SVG_HEART_FILLED : SVG_HEART_EMPTY;
-    const labelFav = esFav ? 'Guardado' : 'Guardar';
-    const claseFav = esFav ? 'es-favorito' : '';
+    const labelFav = esFav ? '❤️ Quitar Favorito' : '🤍 Guardar Favorito';
 
     if (modalBody) {
         modalBody.innerHTML = `
@@ -524,13 +491,11 @@ window.abrirModal = function(id) {
             ${redesHTML}
 
             <div class="modal-actions-row">
-                <button id="btn-fav-modal" class="btn-modal-action btn-fav-icon ${claseFav}" onclick="toggleFavorito('${id}')">
-                    ${svgCorazon}
-                    <span class="fav-label">${labelFav}</span>
+                <button id="btn-fav-modal" class="btn-modal-action" onclick="toggleFavorito('${id}')">
+                    ${labelFav}
                 </button>
                 <button class="btn-modal-action btn-share" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')">
-                    ${SVG_SHARE}
-                    <span>Compartir</span>
+                    📤 Compartir
                 </button>
             </div>
 
@@ -610,20 +575,18 @@ async function cargarServicios() {
         let delayAnimacion = 0.1; 
         let htmlDestacados = "";
         let htmlNormales = "";
-        const favsGuardados = obtenerFavoritos();
 
+        // ESTA ES LA TARJETA VISUALMENTE IDÉNTICA A TU CÓDIGO SUBIDO
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             window.directorioData[docSnap.id] = data; 
             
             const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
             const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
-            const esFav = favsGuardados.includes(docSnap.id);
 
-            // Se genera el HTML integrando los nuevos botones absolutos y el pie de Ver Más
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up ${claseAdicional}" 
-                         style="animation-delay: ${delayAnimacion}s; position: relative;"
+                         style="animation-delay: ${delayAnimacion}s;"
                          onclick="abrirModal('${docSnap.id}')"
                          data-id="${docSnap.id}"
                          data-nombre="${sanitize(data.nombre)}"
@@ -633,24 +596,11 @@ async function cargarServicios() {
                          data-online="${(data.ubicacion || "").toLowerCase().includes('online') ? 'true' : 'false'}"
                          data-domicilio="${(data.ubicacion || "").toLowerCase().includes('domicilio') ? 'true' : 'false'}">
 
-                    <div class="card-actions-top">
-                        <button class="btn-icon-card btn-fav-card ${esFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito('${docSnap.id}')" title="Favoritos">
-                            ${esFav ? SVG_HEART_FILLED : SVG_HEART_EMPTY}
-                        </button>
-                        <button class="btn-icon-card btn-share-card" onclick="event.stopPropagation(); compartirAnuncio('${docSnap.id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')" title="Compartir">
-                            ${SVG_SHARE}
-                        </button>
-                    </div>
-
                     <div class="categoria-tag">${sanitize(data.categoria)}</div>
-                    <h2 class="titulo-con-margen">${sanitize(data.nombre)}</h2>
+                    <h2>${sanitize(data.nombre)}</h2>
                     <p class="descripcion">${sanitize(data.descripcion)}</p>
                     <div class="info-extra">
                         <span>📍 ${sanitize(data.ubicacion || 'Consultar')}</span>
-                    </div>
-
-                    <div class="card-footer-more">
-                        <span class="ver-mas-texto">➕ Ver más datos</span>
                     </div>
                 </article>
             `;
@@ -675,6 +625,11 @@ async function cargarServicios() {
     }
 }
 
+// ==========================================
+// FILTROS, BÚSQUEDA Y STICKY HEADER
+// ==========================================
+
+// --- LÓGICA DE BÚSQUEDA MEJORADA ---
 function aplicarFiltros() {
     const buscador = document.getElementById('buscador');
     const textoBusqueda = buscador ? quitarAcentos(buscador.value.toLowerCase().trim()) : '';
@@ -686,10 +641,19 @@ function aplicarFiltros() {
     tarjetas.forEach(tarjeta => {
         if (tarjeta.classList.contains('tarjeta-cta-unirse')) return;
         
-        const contenido = quitarAcentos(
-            (tarjeta.dataset.nombre + " " + tarjeta.dataset.categoria + " " + tarjeta.dataset.descripcion).toLowerCase()
-        );
-        const coincideTexto = terminosBusqueda.every(termino => contenido.includes(termino));
+        const nombre = quitarAcentos((tarjeta.dataset.nombre || "").toLowerCase());
+        const categoria = quitarAcentos((tarjeta.dataset.categoria || "").toLowerCase());
+        const descripcion = quitarAcentos((tarjeta.dataset.descripcion || "").toLowerCase());
+        
+        const coincideTexto = terminosBusqueda.every(termino => {
+            if (termino.length <= 4) {
+                // Busca palabra exacta para palabras cortas (ej: "arte")
+                const regex = new RegExp(`\\b${termino}s?\\b`, 'i');
+                return regex.test(nombre) || regex.test(categoria) || regex.test(descripcion);
+            } else {
+                return nombre.includes(termino) || categoria.includes(termino) || descripcion.includes(termino);
+            }
+        });
         
         let coincideFiltroRapido = true;
         if (filtroActivo === 'urgencias') coincideFiltroRapido = tarjeta.dataset.urgencias === 'true';
@@ -736,5 +700,23 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         aplicarFiltros();
     });
 });
+
+// --- LÓGICA DE STICKY HEADER ---
+const searchContainer = document.querySelector('.search-container');
+const header = document.getElementById('main-header');
+
+if (searchContainer && header) {
+    window.addEventListener('scroll', () => {
+        const headerBottom = header.offsetTop + header.offsetHeight;
+        
+        if (window.scrollY > headerBottom) {
+            searchContainer.classList.add('sticky-search');
+            document.body.classList.add('has-sticky-search');
+        } else {
+            searchContainer.classList.remove('sticky-search');
+            document.body.classList.remove('has-sticky-search');
+        }
+    });
+}
 
 cargarServicios();
