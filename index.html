@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Encontrá plomeros, electricistas, psicólogos, niñeras y más servicios en Villa Parque Santa Ana. Directorio gratuito de profesionales del barrio.">
     <title>Directorio de Servicios - Villa Parque Santa Ana</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,12 +12,11 @@
 
     <header class="header" id="main-header">
         <div class="header-top">
-            <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio" target="_blank" class="btn-sugerencias-header" title="Sugerencias">💡<span class="ocultar-movil"> Sugerencias</span></a>
-            
-            <button id="btn-publicar" class="btn-publicar" onclick="document.getElementById('btn-nav-panel').click()">👤<span class="ocultar-movil"> Mi Perfil / Administrar</span></button>
-            
-            <button id="btn-theme-toggle" class="btn-icon" title="Cambiar modo oscuro/claro">🌙</button>
-            <button id="btn-nav-panel" style="display:none;">Nav</button> 
+            <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio" target="_blank" rel="noopener noreferrer" class="btn-sugerencias-header" title="Sugerencias" aria-label="Enviar sugerencias por WhatsApp">
+                💡<span class="ocultar-movil"> Sugerencias</span>
+            </a>
+            <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil y administración">👤<span class="ocultar-movil"> Mi Perfil / Administrar</span></button>
+            <button id="btn-theme-toggle" class="btn-icon" title="Cambiar modo oscuro/claro" aria-label="Alternar tema oscuro y claro">🌙</button>
         </div>
         
         <div class="header-content">
@@ -25,18 +25,18 @@
             <p id="contador-profesionales" class="trust-counter">Cargando comunidad...</p>
             
             <div class="search-container">
-                <input list="sugerencias-busqueda" id="buscador" placeholder="🔍 ¿Qué necesitas? (ej. Plomero, Niñera, Viandas)">
+                <label for="buscador" class="sr-only" style="display:none;">Buscar servicio</label>
+                <input list="sugerencias-busqueda" id="buscador" placeholder="🔍 ¿Qué experto necesitas hoy? (ej. Plomero, Psicología)">
                 <datalist id="sugerencias-busqueda">
-                    <option value="Psicología">
-                    <option value="Plomería y Gas">
-                    <option value="Electricista">
-                    <option value="Servicio Doméstico">
-                    <option value="Viandas">
-                    <option value="Paseador de Perros">
-                    <option value="Niñera">
-                    <option value="Reparación de Celulares">
-                    <option value="Clases Particulares">
-                    <option value="Fletes">
+                    <option value="Psicología"></option>
+                    <option value="Plomería y Gas"></option>
+                    <option value="Electricista"></option>
+                    <option value="Servicio Doméstico"></option>
+                    <option value="Viandas"></option>
+                    <option value="Paseador de Perros"></option>
+                    <option value="Niñera"></option>
+                    <option value="Reparación de Celulares"></option>
+                    <option value="Fletes"></option>
                 </datalist>
             </div>
 
@@ -52,64 +52,59 @@
         <div id="vista-directorio">
             <div id="lista-servicios" class="grid-servicios">
                 </div>
+            <div id="mensaje-sin-resultados" class="hidden fade-in-up" style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem; opacity: 0.8;">🔎</span>
+                <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.3rem;">No encontramos lo que buscás</h3>
+                <p>Probá con otras palabras o quitá los filtros para ver más opciones.</p>
+            </div>
         </div>
 
-        <div id="vista-panel" style="display: none;" class="form-container">
+        <div id="vista-panel" class="form-container hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem;">
-                <button id="btn-volver-directorio" class="btn-secundario">⬅ Volver al Directorio</button>
-                <button id="btn-logout" class="rounded-button" style="display: none; background: #e2e8f0; color: #4a5568; border: none; cursor: pointer; font-size: 0.85rem; padding: 0.5rem 0.8rem;">🔒 Cerrar Sesión</button>
+                <button id="btn-volver-directorio" class="btn-secundario" style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px; color: var(--text-color); font-weight: 500; cursor: pointer;">⬅ Volver al Directorio</button>
+                <button id="btn-logout" class="rounded-button hidden" style="background: #e2e8f0; color: #4a5568; border: none; cursor: pointer; font-size: 0.85rem; padding: 0.5rem 0.8rem;">🔒 Cerrar Sesión</button>
             </div>
             
             <div id="seccion-login" class="tarjeta-servicio centrado professional-card">
-                <h2>Ingresa para gestionar tu perfil</h2>
-                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Necesitas loguearte con Google para agregar, editar o borrar tus publicaciones.</p>
-                <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1.5rem;">
-                    Continuar con Google
-                </button>
+                <h2 style="text-align: center;">Ingresa para gestionar tu perfil</h2>
+                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem; text-align: center;">Necesitas loguearte con Google para agregar, editar o borrar tus publicaciones.</p>
+                <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1.5rem;">Continuar con Google</button>
             </div>
 
-            <div id="seccion-dashboard" style="display: none;">
+            <div id="seccion-dashboard" class="hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2>Mis Servicios Publicados</h2>
-                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar Nuevo Servicio</button>
+                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar Nuevo</button>
                 </div>
-                <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;">
-                    </div>
+                <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
             </div>
 
-            <div id="seccion-formulario" class="tarjeta-servicio professional-card fade-in-up" style="display: none;">
+            <div id="seccion-formulario" class="tarjeta-servicio professional-card fade-in-up hidden">
                 <h2 id="titulo-formulario">Datos del Servicio</h2>
-                
                 <form id="form-servicio" class="formulario-estilizado">
                     <div class="grupo-input">
-                        <label>Nombre del Negocio o Profesional *</label>
+                        <label for="nombre">Nombre del Negocio o Profesional *</label>
                         <input type="text" id="nombre" required placeholder="Ej. Bongiorno Nicolas - Psicología">
                     </div>
-
                     <div class="grupo-input">
-                        <label>Categoría Principal *</label>
+                        <label for="categoria">Categoría Principal *</label>
                         <select id="categoria" required>
                             <option value="">Selecciona un rubro...</option>
                             <option value="Salud Mental y Psicología">Salud Mental y Psicología</option>
                             <option value="Salud y Médicos">Salud y Médicos</option>
                             <option value="Servicio Doméstico y Limpieza">Servicio Doméstico y Limpieza</option>
                             <option value="Cuidado de Personas">Cuidado de Personas (Niñeras, Acompañantes)</option>
-                            <option value="Cuidado de Mascotas">Cuidado de Mascotas (Paseos, Veterinaria)</option>
                             <option value="Gastronomía y Viandas">Gastronomía y Viandas</option>
-                            <option value="Tecnología y Reparación">Tecnología y Reparación (PC, Celulares)</option>
+                            <option value="Tecnología y Reparación">Tecnología y Reparación</option>
                             <option value="Construcción y Albañilería">Construcción y Albañilería</option>
-                            <option value="Electricidad y Refrigeración">Electricidad y Refrigeración</option>
-                            <option value="Plomería y Gas">Plomería y Gas</option>
-                            <option value="Mantenimiento y Jardinería">Mantenimiento y Jardinería</option>
+                            <option value="Electricidad y Plomería">Electricidad y Plomería</option>
                             <option value="Educación y Clases">Educación y Clases</option>
-                            <option value="Estética y Belleza">Estética y Belleza</option>
                             <option value="Fletes y Logística">Fletes y Logística</option>
                             <option value="Otros">Otros Servicios</option>
                         </select>
                     </div>
-
                     <div class="grupo-input">
-                        <label>Modalidad de Atención *</label>
+                        <label for="ubicacion">Modalidad de Atención *</label>
                         <select id="ubicacion" required>
                             <option value="100% Online (Virtual)">100% Online (Virtual / Videollamada)</option>
                             <option value="Presencial y Online">Presencial y Online</option>
@@ -118,48 +113,42 @@
                             <option value="Ambas (A domicilio y en local)">Ambas (A domicilio y local)</option>
                         </select>
                     </div>
-
                     <div class="grupo-input">
-                        <label>WhatsApp de Contacto *</label>
-                        <input type="number" id="whatsapp" required placeholder="Ej. 3516575261">
+                        <label for="whatsapp">WhatsApp de Contacto (Solo números) *</label>
+                        <input type="tel" id="whatsapp" pattern="[0-9]*" required placeholder="Ej. 3516575261">
                     </div>
-
-                    <div class="grupo-input" style="flex-direction: row; gap: 1rem;">
+                    <div class="grupo-input responsive-row">
                         <div style="flex: 1;">
-                            <label style="color:#e1306c;">Instagram (Opcional)</label>
-                            <input type="text" id="instagram" placeholder="Ej. tu_usuario o enlace" style="width:100%;">
+                            <label for="instagram" style="color:#e1306c;">Instagram (Opcional)</label>
+                            <input type="text" id="instagram" placeholder="Ej. tu_usuario">
                         </div>
                         <div style="flex: 1;">
-                            <label style="color:#1877f2;">Facebook (Opcional)</label>
-                            <input type="text" id="facebook" placeholder="Ej. tu_usuario o enlace" style="width:100%;">
+                            <label for="facebook" style="color:#1877f2;">Facebook (Opcional)</label>
+                            <input type="text" id="facebook" placeholder="Ej. enlace_perfil">
                         </div>
                     </div>
-
                     <div class="grupo-input triggers-group">
                         <label>Gatillos (Destaca tu anuncio)</label>
-                        <div class="check-input"><input type="checkbox" id="urgencias"> <label>🚨 Atiendo Urgencias 24hs</label></div>
-                        <div class="check-input"><input type="checkbox" id="presupuesto"> <label>💡 Presupuesto sin cargo</label></div>
+                        <div class="check-input"><input type="checkbox" id="urgencias"> <label for="urgencias" style="cursor:pointer;">🚨 Atiendo Urgencias 24hs</label></div>
+                        <div class="check-input"><input type="checkbox" id="presupuesto"> <label for="presupuesto" style="cursor:pointer;">💡 Presupuesto sin cargo</label></div>
                     </div>
-
                     <div class="grupo-input description-group">
-                        <label>Breve Descripción *</label>
+                        <label for="descripcion">Breve Descripción *</label>
                         <textarea id="descripcion" rows="4" required placeholder="Describe qué ofreces detalladamente."></textarea>
                     </div>
-
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;" class="form-actions">
                         <button type="submit" id="btn-guardar" class="btn-whatsapp rounded-button pulse-subtle" style="flex: 2;">Guardar Servicio</button>
-                        <button type="button" id="btn-cancelar" class="rounded-button" style="flex: 1; background: var(--card-bg); border:1px solid #ccc; color:var(--text); cursor:pointer;">Cancelar</button>
+                        <button type="button" id="btn-cancelar" class="rounded-button" style="flex: 1; background: var(--input-bg); border:1px solid var(--border-color); color:var(--text-color); cursor:pointer;">Cancelar</button>
                     </div>
                 </form>
             </div>
         </div>
     </main>
 
-    <div id="modal-perfil" class="modal-overlay" style="display: none;">
+    <div id="modal-perfil" class="modal-overlay hidden" aria-modal="true" role="dialog">
         <div class="modal-content">
-            <button id="btn-cerrar-modal" class="btn-close">&times;</button>
-            <div id="modal-body">
-                </div>
+            <button id="btn-cerrar-modal" class="btn-close" aria-label="Cerrar ventana">&times;</button>
+            <div id="modal-body"></div>
         </div>
     </div>
 
