@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Encontrá plomeros, electricistas, psicólogos, niñeras y más servicios en Villa Parque Santa Ana. Directorio gratuito de profesionales del barrio.">
     <title>Directorio de Servicios - Villa Parque Santa Ana</title>
     <link rel="stylesheet" href="style.css">
@@ -16,7 +15,7 @@
             <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio" target="_blank" rel="noopener noreferrer" class="btn-sugerencias-header" title="Sugerencias" aria-label="Enviar sugerencias por WhatsApp">
                 💡<span class="ocultar-movil"> Sugerencias</span>
             </a>
-            <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil y administración">👤<span class="ocultar-movil"> Mi Perfil / Administrar</span></button>
+            <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil y administración">👤<span class="ocultar-movil"> Mi Perfil / Favoritos</span></button>
             <button id="btn-theme-toggle" class="btn-icon" title="Cambiar modo oscuro/claro" aria-label="Alternar tema oscuro y claro">🌙</button>
         </div>
         
@@ -67,17 +66,29 @@
             </div>
             
             <div id="seccion-login" class="tarjeta-servicio centrado professional-card">
-                <h2 style="text-align: center;">Ingresa para gestionar tu perfil</h2>
-                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem; text-align: center;">Necesitas loguearte con Google para agregar, editar o borrar tus publicaciones.</p>
+                <h2 style="text-align: center;">Tu cuenta en Santa Ana</h2>
+                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem; text-align: center;">Iniciá sesión con Google para publicar tus servicios o guardar a tus profesionales favoritos.</p>
                 <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1.5rem;">Continuar con Google</button>
             </div>
 
             <div id="seccion-dashboard" class="hidden">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h2>Mis Servicios Publicados</h2>
-                    <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer;">+ Agregar Nuevo</button>
+                <div class="dashboard-tabs">
+                    <button id="tab-mis-anuncios" class="tab-btn active">Mis Anuncios</button>
+                    <button id="tab-mis-favoritos" class="tab-btn">❤️ Favoritos</button>
                 </div>
-                <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+
+                <div id="contenido-mis-anuncios">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="font-size: 1.2rem;">Servicios Publicados</h2>
+                        <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer; padding: 0.5rem 1rem;">+ Nuevo</button>
+                    </div>
+                    <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+
+                <div id="contenido-mis-favoritos" class="hidden">
+                    <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Profesionales Guardados</h2>
+                    <div id="lista-mis-favoritos" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
             </div>
 
             <div id="seccion-formulario" class="tarjeta-servicio professional-card fade-in-up hidden">
@@ -158,43 +169,5 @@
     </footer>
 
     <script type="module" src="app.js"></script>
-<!-- Code injected by live-server -->
-<script>
-	// <![CDATA[  <-- For SVG support
-	if ('WebSocket' in window) {
-		(function () {
-			function refreshCSS() {
-				var sheets = [].slice.call(document.getElementsByTagName("link"));
-				var head = document.getElementsByTagName("head")[0];
-				for (var i = 0; i < sheets.length; ++i) {
-					var elem = sheets[i];
-					var parent = elem.parentElement || head;
-					parent.removeChild(elem);
-					var rel = elem.rel;
-					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
-						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
-						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
-					}
-					parent.appendChild(elem);
-				}
-			}
-			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
-			var address = protocol + window.location.host + window.location.pathname + '/ws';
-			var socket = new WebSocket(address);
-			socket.onmessage = function (msg) {
-				if (msg.data == 'reload') window.location.reload();
-				else if (msg.data == 'refreshcss') refreshCSS();
-			};
-			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
-				console.log('Live reload enabled.');
-				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
-			}
-		})();
-	}
-	else {
-		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
-	}
-	// ]]>
-</script>
 </body>
 </html>
