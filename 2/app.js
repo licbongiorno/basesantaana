@@ -130,6 +130,9 @@ onAuthStateChanged(auth, async (user) => {
         if(seccionDashboard) seccionDashboard.classList.add('hidden');
         if(seccionFormulario) seccionFormulario.classList.add('hidden');
         if(btnLogout) btnLogout.classList.add('hidden');
+        
+        const contenedorLista = document.getElementById('lista-mis-servicios');
+        if(contenedorLista) contenedorLista.innerHTML = "";
     }
 });
 
@@ -151,13 +154,40 @@ if(btnLogout) {
     });
 }
 
+// ==========================================
+// TABS DEL DASHBOARD (Anuncios vs Favoritos)
+// ==========================================
+const tabAnuncios = document.getElementById('tab-mis-anuncios');
+const tabFavoritos = document.getElementById('tab-mis-favoritos');
+const contAnuncios = document.getElementById('contenido-mis-anuncios');
+const contFavoritos = document.getElementById('contenido-mis-favoritos');
+
+if(tabAnuncios && tabFavoritos) {
+    tabAnuncios.addEventListener('click', () => {
+        tabAnuncios.classList.add('active');
+        tabFavoritos.classList.remove('active');
+        contAnuncios.classList.remove('hidden');
+        contFavoritos.classList.add('hidden');
+    });
+
+    tabFavoritos.addEventListener('click', () => {
+        tabFavoritos.classList.add('active');
+        tabAnuncios.classList.remove('active');
+        contFavoritos.classList.remove('hidden');
+        contAnuncios.classList.add('hidden');
+        renderizarMisFavoritosDash();
+    });
+}
+
 async function mostrarDashboard() {
     if(seccionFormulario) seccionFormulario.classList.add('hidden');
     if(seccionDashboard) seccionDashboard.classList.remove('hidden');
     
+    // Asegurarse de que al cargar se abra la pestaña de anuncios
+    if(tabAnuncios) tabAnuncios.click();
+    
     const contenedorLista = document.getElementById('lista-mis-servicios');
     if(!contenedorLista) return;
-    
     contenedorLista.innerHTML = "Cargando tus servicios...";
 
     try {
@@ -189,6 +219,31 @@ async function mostrarDashboard() {
     } catch(e) {
         contenedorLista.innerHTML = "<p style='color: red;'>Error al cargar tus servicios.</p>";
     }
+}
+
+function renderizarMisFavoritosDash() {
+    const contenedorFavs = document.getElementById('lista-mis-favoritos');
+    if(!contenedorFavs) return;
+    
+    const favs = obtenerFavoritos();
+    if(favs.length === 0) {
+        contenedorFavs.innerHTML = "<p style='color: var(--text-muted);'>Aún no has guardado a ningún profesional.</p>";
+        return;
+    }
+
+    let htmlAcumulado = "";
+    favs.forEach(id => {
+        const data = window.directorioData[id];
+        if(data) {
+            htmlAcumulado += `
+                <article class="tarjeta-servicio fade-in-up" onclick="abrirModal('${id}')" style="padding: 1rem;">
+                    <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${sanitize(data.nombre)}</h3>
+                    <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: bold;">${sanitize(data.categoria)}</span>
+                </article>
+            `;
+        }
+    });
+    contenedorFavs.innerHTML = htmlAcumulado;
 }
 
 window.editarServicio = async function(id) {
@@ -286,31 +341,48 @@ if(formServicio) {
 // VENTANA MODAL, FAVORITOS Y COMPARTIR
 // ==========================================
 
-// FIX DIAMANTE: Gestión de Favoritos Local (Sin necesidad de login)
+// FIX DIAMANTE: Los favoritos se guardan localmente pero ATADOS al UID del usuario logueado
 function obtenerFavoritos() {
-    return JSON.parse(localStorage.getItem('favs_santa_ana')) || [];
+    if(!usuarioActual) return [];
+    return JSON.parse(localStorage.getItem('favs_santa_ana_' + usuarioActual.uid)) || [];
 }
 
 window.toggleFavorito = function(id) {
+    // Protección estricta: Solo si está logueado
+    if(!usuarioActual) {
+        alert("👋 ¡Hola! Para guardar profesionales en Favoritos, primero debes iniciar sesión.");
+        cerrarModalPerfil();
+        abrirPanelGestion(); // Lo lleva directo a la pantalla de login
+        return;
+    }
+
     let favs = obtenerFavoritos();
     const btn = document.getElementById('btn-fav-modal');
     
     if (favs.includes(id)) {
+        // Remover favorito
         favs = favs.filter(favId => favId !== id);
-        if(btn) { btn.classList.remove('es-favorito'); btn.innerHTML = '🤍 Guardar'; }
+        if(btn) { 
+            btn.classList.remove('es-favorito'); 
+            btn.innerHTML = '🤍'; 
+            btn.title = 'Agregar a favoritos';
+        }
     } else {
+        // Agregar favorito
         favs.push(id);
-        if(btn) { btn.classList.add('es-favorito'); btn.innerHTML = '❤️ Guardado'; }
+        if(btn) { 
+            btn.classList.add('es-favorito'); 
+            btn.innerHTML = '❤️'; 
+            btn.title = 'Quitar de favoritos';
+        }
     }
     
-    localStorage.setItem('favs_santa_ana', JSON.stringify(favs));
-    
-    // Si el filtro de favoritos está activo, actualiza la lista detrás
-    if (filtroActivo === 'favoritos') aplicarFiltros();
+    localStorage.setItem('favs_santa_ana_' + usuarioActual.uid, JSON.stringify(favs));
 };
 
-// FIX DIAMANTE: Compartir genera el Link Único al anuncio
+// FIX DIAMANTE: Compartir fuerza la URL específica del anuncio
 window.compartirAnuncio = function(id, nombre, categoria) {
+    // Forzamos que la URL a compartir sea SIEMPRE la base web + ?id=XXX
     const urlCompartir = window.location.origin + window.location.pathname + "?id=" + id;
     
     if (navigator.share) {
@@ -320,9 +392,9 @@ window.compartirAnuncio = function(id, nombre, categoria) {
             url: urlCompartir
         }).catch(console.error);
     } else {
-        // Fallback si la PC no soporta navigator.share
+        // PC Fallback
         navigator.clipboard.writeText(urlCompartir).then(() => {
-            alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp o donde quieras.");
+            alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp o en tus redes sociales.");
         });
     }
 };
@@ -334,7 +406,7 @@ window.abrirModal = function(id) {
     const data = window.directorioData[id];
     if(!data) return;
 
-    // FIX DIAMANTE: Actualizamos la URL para que quede el ID visible (Deep Linking)
+    // Actualizamos la URL para Deep Linking visible
     history.pushState(null, null, '?id=' + id);
 
     const waNumero = formatearWhatsapp(data.whatsapp);
@@ -363,18 +435,23 @@ window.abrirModal = function(id) {
     const favs = obtenerFavoritos();
     const esFav = favs.includes(id);
     const claseFav = esFav ? 'es-favorito' : '';
-    const textoFav = esFav ? '❤️ Guardado' : '🤍 Guardar';
+    const iconoFav = esFav ? '❤️' : '🤍';
+    const tituloFav = esFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
 
-    // FIX DIAMANTE: Botones de compartir y favoritos DENTRO del modal
+    // FIX DIAMANTE: Diseño de Cabecera con iconos alineados y X separada
     if(modalBody) {
         modalBody.innerHTML = `
-            <div class="modal-actions-top">
-                <button id="btn-fav-modal" class="btn-modal-action btn-fav ${claseFav}" onclick="toggleFavorito('${id}')">${textoFav}</button>
-                <button class="btn-modal-action" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre)}', '${sanitize(data.categoria)}')">🔗 Compartir</button>
+            <div class="modal-header-actions">
+                <div style="flex: 1; padding-right: 1rem;">
+                    <div class="categoria-tag" style="margin-bottom: 0.5rem; display: inline-block;">${sanitize(data.categoria)}</div>
+                    <h2 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 0;">${sanitize(data.nombre)}</h2>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 0.5rem;">
+                    <button class="btn-icon-action" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre)}', '${sanitize(data.categoria)}')" title="Compartir este perfil">🔗</button>
+                    <button id="btn-fav-modal" class="btn-icon-action btn-fav-icon ${claseFav}" onclick="toggleFavorito('${id}')" title="${tituloFav}">${iconoFav}</button>
+                </div>
             </div>
             
-            <div class="categoria-tag" style="margin-bottom: 1rem; display: inline-block;">${sanitize(data.categoria)}</div>
-            <h2 style="font-size: 1.6rem; margin-bottom: 0.8rem; color: var(--text-color);">${sanitize(data.nombre)}</h2>
             ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
             
             <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color);">
@@ -417,12 +494,12 @@ function cerrarModalPerfil() {
     document.body.classList.remove('modal-open');
     setTimeout(() => { modalPerfil.classList.add('hidden'); }, 300);
     
-    // Limpia la URL para que no quede el ID enganchado si cierran
+    // Limpia la URL para que no quede el ID enganchado al volver al directorio general
     history.pushState(null, null, window.location.pathname);
 }
 
 // ==========================================
-// DIRECTORIO Y FILTROS INTELIGENTES
+// DIRECTORIO Y CARGA DE DATOS
 // ==========================================
 const listaServicios = document.getElementById('lista-servicios');
 const contadorTexto = document.getElementById('contador-profesionales');
@@ -472,8 +549,6 @@ async function cargarServicios() {
             window.directorioData[docSnap.id] = data; 
             
             const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
-            
-            // FIX DIAMANTE: Tarjeta 100% limpia sin botones extras. Todo sucede al tocarla.
             const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
 
             const tarjetaHTML = `
@@ -488,7 +563,7 @@ async function cargarServicios() {
                          data-online="${(data.ubicacion || "").toLowerCase().includes('online') ? 'true' : 'false'}"
                          data-domicilio="${(data.ubicacion || "").toLowerCase().includes('domicilio') ? 'true' : 'false'}">
                     
-                    <div class="categoria-tag" style="margin-bottom:0.8rem;">${sanitize(data.categoria)}</div>
+                    <div class="categoria-tag">${sanitize(data.categoria)}</div>
                     <h2>${sanitize(data.nombre)}</h2>
                     <p class="descripcion">${sanitize(data.descripcion)}</p>
                     <div class="info-extra">
@@ -504,7 +579,7 @@ async function cargarServicios() {
         
         listaServicios.innerHTML = tarjetaCtaHTML + htmlDestacados + htmlNormales;
 
-        // FIX DIAMANTE: Lectura de Deep Links (Si entra por un link compartido, abre el anuncio directo)
+        // LECTURA DE LINK COMPARTIDO (Abre directo el modal si hay ?id=...)
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const idCompartido = urlParams.get('id');
@@ -525,7 +600,6 @@ function aplicarFiltros() {
     
     const tarjetas = document.querySelectorAll('.tarjeta-servicio');
     let tarjetasVisibles = 0;
-    const misFavs = obtenerFavoritos();
 
     tarjetas.forEach(tarjeta => {
         if(tarjeta.classList.contains('tarjeta-cta-unirse')) return;
@@ -537,11 +611,6 @@ function aplicarFiltros() {
         if (filtroActivo === 'urgencias') coincideFiltroRapido = tarjeta.dataset.urgencias === 'true';
         if (filtroActivo === 'online') coincideFiltroRapido = tarjeta.dataset.online === 'true';
         if (filtroActivo === 'domicilio') coincideFiltroRapido = tarjeta.dataset.domicilio === 'true';
-        
-        // FIX DIAMANTE: Filtro exclusivo de Favoritos
-        if (filtroActivo === 'favoritos') {
-            coincideFiltroRapido = misFavs.includes(tarjeta.dataset.id);
-        }
         
         if ((coincideTexto || terminosBusqueda.length === 0) && coincideFiltroRapido) {
             tarjeta.classList.remove('hidden');
