@@ -19,7 +19,7 @@ const provider = new GoogleAuthProvider();
 window.directorioData = {};
 
 // ==========================================
-// UTILIDADES
+// UTILIDADES (Seguridad y Normalización)
 // ==========================================
 function sanitize(str) {
     if (!str) return '';
@@ -59,15 +59,6 @@ function formatearWhatsapp(numero) {
 }
 
 // ==========================================
-// SVG ICONS (inline, estilo minimalista)
-// ==========================================
-const SVG_HEART_EMPTY = `<svg class="fav-svg" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-
-const SVG_HEART_FILLED = `<svg class="fav-svg fav-svg--filled" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-
-const SVG_SHARE = `<svg class="share-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
-
-// ==========================================
 // MODO OSCURO
 // ==========================================
 const btnTheme = document.getElementById('btn-theme-toggle');
@@ -91,7 +82,7 @@ if (btnTheme) {
 }
 
 // ==========================================
-// SPA Y PANEL DE USUARIO
+// SPA (Single Page Application)
 // ==========================================
 const vistaDirectorio = document.getElementById('vista-directorio');
 const vistaPanel = document.getElementById('vista-panel');
@@ -163,38 +154,13 @@ if(btnLogout) {
     });
 }
 
-// ==========================================
-// TABS DEL DASHBOARD (Anuncios vs Favoritos)
-// ==========================================
-const tabAnuncios = document.getElementById('tab-mis-anuncios');
-const tabFavoritos = document.getElementById('tab-mis-favoritos');
-const contAnuncios = document.getElementById('contenido-mis-anuncios');
-const contFavoritos = document.getElementById('contenido-mis-favoritos');
-
-if(tabAnuncios && tabFavoritos) {
-    tabAnuncios.addEventListener('click', () => {
-        tabAnuncios.classList.add('active');
-        tabFavoritos.classList.remove('active');
-        contAnuncios.classList.remove('hidden');
-        contFavoritos.classList.add('hidden');
-    });
-
-    tabFavoritos.addEventListener('click', () => {
-        tabFavoritos.classList.add('active');
-        tabAnuncios.classList.remove('active');
-        contFavoritos.classList.remove('hidden');
-        contAnuncios.classList.add('hidden');
-        renderizarMisFavoritosDash();
-    });
-}
-
 async function mostrarDashboard() {
     if(seccionFormulario) seccionFormulario.classList.add('hidden');
     if(seccionDashboard) seccionDashboard.classList.remove('hidden');
-    if(tabAnuncios) tabAnuncios.click();
     
     const contenedorLista = document.getElementById('lista-mis-servicios');
     if(!contenedorLista) return;
+    
     contenedorLista.innerHTML = "Cargando tus servicios...";
 
     try {
@@ -226,37 +192,6 @@ async function mostrarDashboard() {
     } catch(e) {
         contenedorLista.innerHTML = "<p style='color: red;'>Error al cargar tus servicios.</p>";
     }
-}
-
-window.renderizarMisFavoritosDash = function() {
-    const contenedorFavs = document.getElementById('lista-mis-favoritos');
-    if(!contenedorFavs) return;
-    
-    const favs = obtenerFavoritos();
-    if(favs.length === 0) {
-        contenedorFavs.innerHTML = "<p style='color: var(--text-muted);'>Aún no has guardado a ningún profesional.</p>";
-        return;
-    }
-
-    let htmlAcumulado = "";
-    favs.forEach(id => {
-        const data = window.directorioData[id];
-        if(data) {
-            htmlAcumulado += `
-                <div class="item-dashboard fade-in-up" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="font-size: 1.1rem; margin-bottom:0.2rem;">${sanitize(data.nombre)}</h3>
-                        <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: bold;">${sanitize(data.categoria)}</span>
-                    </div>
-                    <div style="display:flex; gap:0.5rem;">
-                        <button onclick="cerrarModalPerfil(); abrirModal('${id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Ver Anuncio</button>
-                        <button onclick="toggleFavorito('${id}'); renderizarMisFavoritosDash();" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Quitar</button>
-                    </div>
-                </div>
-            `;
-        }
-    });
-    contenedorFavs.innerHTML = htmlAcumulado;
 }
 
 window.editarServicio = async function(id) {
@@ -316,8 +251,9 @@ const formServicio = document.getElementById('form-servicio');
 if(formServicio) {
     formServicio.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const btnSubmit = document.getElementById('btn-guardar');
-        btnSubmit.innerHTML = "Guardando..."; 
+        btnSubmit.innerHTML = "⏳ Guardando..."; 
         btnSubmit.disabled = true;
 
         const datos = {
@@ -351,74 +287,27 @@ if(formServicio) {
 }
 
 // ==========================================
-// VENTANA MODAL, FAVORITOS Y COMPARTIR
+// VENTANA MODAL Y COMPARTIR (CON DEEP LINKING)
 // ==========================================
 
-function obtenerFavoritos() {
-    if(!usuarioActual) return [];
-    return JSON.parse(localStorage.getItem('favs_santa_ana_' + usuarioActual.uid)) || [];
-}
-
-// -----------------------------------------------
-// toggleFavorito
-// Reglas:
-//  - Sin sesión → alerta y salida. Sin redirigir.
-//  - Con sesión → guarda en localStorage[favs_santa_ana_UID].
-//  - Actualiza el SVG del botón en el modal sin re-renderizar el DOM.
-// -----------------------------------------------
-window.toggleFavorito = function(id) {
-    if (!usuarioActual) {
-        alert("Debes iniciar sesión para guardar favoritos.");
-        return;
-    }
-
-    let favs = obtenerFavoritos();
-    const btn = document.getElementById('btn-fav-modal');
-    const estaEnFavs = favs.includes(id);
-
-    if (estaEnFavs) {
-        // Quitar de favoritos
-        favs = favs.filter(favId => favId !== id);
-        if (btn) {
-            btn.classList.remove('es-favorito');
-            btn.innerHTML = SVG_HEART_EMPTY + '<span class="fav-label">Guardar</span>';
-            btn.setAttribute('aria-label', 'Guardar en favoritos');
-        }
-    } else {
-        // Agregar a favoritos
-        favs.push(id);
-        if (btn) {
-            btn.classList.add('es-favorito');
-            btn.innerHTML = SVG_HEART_FILLED + '<span class="fav-label">Guardado</span>';
-            btn.setAttribute('aria-label', 'Quitar de favoritos');
-        }
-    }
-
-    localStorage.setItem('favs_santa_ana_' + usuarioActual.uid, JSON.stringify(favs));
-};
-
-// -----------------------------------------------
-// compartirAnuncio
-// Reglas:
-//  - Disponible sin login.
-//  - URL siempre construida con: origin + pathname + ?id=DOCID
-//  - navigator.share si está disponible, clipboard.writeText como fallback.
-// -----------------------------------------------
-window.compartirAnuncio = function(id, nombre, categoria) {
-    const urlCompartir = window.location.origin + window.location.pathname + '?id=' + id;
+// MODIFICADO: recibe id además de nombre y categoria
+// y construye la URL única del anuncio para compartir
+window.compartirPerfil = function(id, nombre, categoria) {
+    const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
+    const texto = `${nombre} — ${categoria}`;
 
     if (navigator.share) {
         navigator.share({
             title: nombre,
-            text: `Mirá este profesional en el Directorio de Santa Ana: ${nombre} (${categoria})`,
-            url: urlCompartir
-        }).catch(console.error);
+            text: texto,
+            url: url,
+        }).catch(() => {}); // silencia cancelación del usuario
     } else {
-        navigator.clipboard.writeText(urlCompartir).then(() => {
-            alert('Enlace copiado. Ya podés pegarlo en WhatsApp o redes sociales.');
+        navigator.clipboard.writeText(url).then(() => {
+            alert('¡Enlace copiado al portapapeles!');
         }).catch(() => {
-            // Fallback para navegadores sin clipboard API
-            prompt('Copiá este enlace:', urlCompartir);
+            // fallback final: prompt copiable
+            prompt('Copiá este enlace para compartir:', url);
         });
     }
 };
@@ -426,133 +315,120 @@ window.compartirAnuncio = function(id, nombre, categoria) {
 const modalPerfil = document.getElementById('modal-perfil');
 const modalBody = document.getElementById('modal-body');
 
-// -----------------------------------------------
-// abrirModal
-// Reglas de grilla: las tarjetas NO tienen botones.
-// Toda la interacción (fav, compartir, WA) vive aquí.
-// Botones de acción (fav + compartir) van ANTES del CTA de WhatsApp.
-// X de cierre ya está posicionada en el HTML (fuera de modal-body).
-// -----------------------------------------------
+// MODIFICADO: actualiza la URL al abrir el modal
 window.abrirModal = function(id) {
     const data = window.directorioData[id];
-    if (!data) return;
+    if(!data) return;
 
-    // Deep linking: actualiza la URL para que se pueda compartir
-    history.pushState(null, null, '?id=' + id);
+    // Deep Linking: escribe ?id=... en la barra sin recargar
+    history.pushState({ modalId: id }, '', `?id=${id}`);
 
     const waNumero = formatearWhatsapp(data.whatsapp);
     const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
-    const mensajeWA = encodeURIComponent(
-        `Hola ${sanitize(data.nombre)}, vi tu anuncio de ${sanitize(data.categoria)} en el Directorio de Santa Ana. Quería hacerte una consulta...`
-    );
-
-    // Badges (sin emojis inline: se usan clases con before si se desea, aquí texto plano)
+    const mensajeWA = encodeURIComponent(`Hola ${sanitize(data.nombre)}, vi tu servicio de ${sanitize(data.categoria)} en el Directorio de Santa Ana. Quería hacerte una consulta...`);
+    
     let badgesHTML = "";
-    if (esDestacado) badgesHTML += `<span class="badge badge-destacado">DESTACADO</span>`;
-    if (data.urgencias)  badgesHTML += `<span class="badge badge-red">URGENCIAS 24H</span>`;
-    if (data.presupuesto) badgesHTML += `<span class="badge badge-blue">PRESUPUESTO SIN CARGO</span>`;
+    if(esDestacado) badgesHTML += `<span class="badge" style="background:#fef08a; color:#854d0e; border: 1px solid #fde047;">⭐ DESTACADO</span>`;
+    if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 URGENCIAS 24H</span>`;
+    if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 PRESUPUESTO SIN CARGO</span>`;
 
-    // Redes sociales
     let redesHTML = "";
     if (data.instagram || data.facebook) {
         redesHTML += `<div class="redes-sociales" style="margin-top: 1.5rem;">`;
         if (data.instagram) {
-            redesHTML += `<a href="${formatearEnlace(data.instagram, 'instagram')}" target="_blank" rel="noopener noreferrer" class="btn-social btn-ig rounded-button">Instagram</a>`;
+            let igLink = formatearEnlace(data.instagram, 'instagram');
+            redesHTML += `<a href="${igLink}" target="_blank" rel="noopener noreferrer" class="btn-social btn-ig rounded-button" onclick="event.stopPropagation();">Instagram</a>`;
         }
         if (data.facebook) {
-            redesHTML += `<a href="${formatearEnlace(data.facebook, 'facebook')}" target="_blank" rel="noopener noreferrer" class="btn-social btn-fb rounded-button">Facebook</a>`;
+            let fbLink = formatearEnlace(data.facebook, 'facebook');
+            redesHTML += `<a href="${fbLink}" target="_blank" rel="noopener noreferrer" class="btn-social btn-fb rounded-button" onclick="event.stopPropagation();">Facebook</a>`;
         }
         redesHTML += `</div>`;
     }
 
-    // Estado inicial del botón de favorito
-    const favs = obtenerFavoritos();
-    const esFav = favs.includes(id);
-    const svgCorazon = esFav ? SVG_HEART_FILLED : SVG_HEART_EMPTY;
-    const labelFav = esFav ? 'Guardado' : 'Guardar';
-    const claseFav = esFav ? 'es-favorito' : '';
-    const ariaFav = esFav ? 'Quitar de favoritos' : 'Guardar en favoritos';
+    const shareIcon = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
 
-    if (modalBody) {
+    if(modalBody) {
         modalBody.innerHTML = `
-            <div style="padding-right: 2.5rem;">
-                <div class="categoria-tag" style="margin-bottom: 0.5rem; display: inline-block;">${sanitize(data.categoria)}</div>
-                <h2 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 0.5rem;">${sanitize(data.nombre)}</h2>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; gap: 1rem;">
+                <div class="categoria-tag" style="display: inline-block;">${sanitize(data.categoria)}</div>
+                <button 
+                    onclick="compartirPerfil('${id}', '${sanitize(data.nombre)}', '${sanitize(data.categoria)}')" 
+                    class="btn-share" 
+                    title="Compartir este anuncio"
+                    style="opacity: 0.7; padding: 6px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted); flex-shrink: 0;">
+                    ${shareIcon} Compartir
+                </button>
             </div>
-
-            ${badgesHTML !== "" ? `<div class="badges-container" style="margin-bottom: 1rem;">${badgesHTML}</div>` : ""}
-
+            <h2 style="font-size: 1.6rem; margin-bottom: 0.8rem; color: var(--text-color);">${sanitize(data.nombre)}</h2>
+            ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
+            
             <div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color);">
                 <h4 style="margin-bottom: 0.8rem; color: var(--primary-color);">Sobre el servicio</h4>
                 <p style="color: var(--text-color); line-height: 1.6; white-space: pre-line;">${sanitize(data.descripcion)}</p>
             </div>
-
+            
             <div class="info-extra" style="font-size: 1rem; border: none; padding: 0;">
-                <p style="margin-bottom: 0.5rem;"><strong>Modalidad:</strong> ${sanitize(data.ubicacion || 'Consultar')}</p>
+                <p style="margin-bottom: 0.5rem;"><strong>📍 Modalidad:</strong> ${sanitize(data.ubicacion || 'Consultar')}</p>
             </div>
-
+            
             ${redesHTML}
-
-            <div class="modal-actions-row">
-                <button
-                    id="btn-fav-modal"
-                    class="btn-modal-action btn-fav-icon ${claseFav}"
-                    onclick="toggleFavorito('${id}')"
-                    aria-label="${ariaFav}"
-                >
-                    ${svgCorazon}
-                    <span class="fav-label">${labelFav}</span>
-                </button>
-                <button
-                    class="btn-modal-action btn-share"
-                    onclick="compartirAnuncio('${id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')"
-                    aria-label="Compartir anuncio"
-                >
-                    ${SVG_SHARE}
-                    <span>Compartir</span>
-                </button>
-            </div>
-
-            <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp rounded-button pulse-subtle" style="margin-top: 0.5rem;">
-                Consultar por WhatsApp
+            
+            <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp rounded-button pulse-subtle" style="margin-top: 2rem;" onclick="event.stopPropagation();">
+                💬 Consultar por WhatsApp
             </a>
         `;
     }
 
-    if (modalPerfil) {
+    if(modalPerfil) {
         modalPerfil.classList.remove('hidden');
-        void modalPerfil.offsetWidth;
+        void modalPerfil.offsetWidth; 
         modalPerfil.classList.add('active');
         document.body.classList.add('modal-open');
     }
 };
 
-window.cerrarModalPerfil = function() {
-    if (!modalPerfil) return;
-    modalPerfil.classList.remove('active');
-    document.body.classList.remove('modal-open');
-    setTimeout(() => { modalPerfil.classList.add('hidden'); }, 300);
-    history.pushState(null, null, window.location.pathname);
-};
-
 const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-if (btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModalPerfil);
+if(btnCerrarModal) btnCerrarModal.addEventListener('click', cerrarModalPerfil);
 
-if (modalPerfil) {
+if(modalPerfil) {
     modalPerfil.addEventListener('click', (e) => {
-        if (e.target === modalPerfil) cerrarModalPerfil();
+        if(e.target === modalPerfil) cerrarModalPerfil();
     });
 }
 
+// MODIFICADO: limpia la URL al cerrar el modal
+function cerrarModalPerfil() {
+    if(!modalPerfil) return;
+    modalPerfil.classList.remove('active');
+    document.body.classList.remove('modal-open');
+    setTimeout(() => { modalPerfil.classList.add('hidden'); }, 300);
+
+    // Deep Linking: quita el ?id= de la URL
+    history.pushState(null, '', window.location.pathname);
+}
+
+// NUEVO: soporte para el botón Atrás del navegador
+window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get('id')) {
+        // Cierra sin volver a limpiar la URL (ya fue limpiada por popstate)
+        if(!modalPerfil) return;
+        modalPerfil.classList.remove('active');
+        document.body.classList.remove('modal-open');
+        setTimeout(() => { modalPerfil.classList.add('hidden'); }, 300);
+    }
+});
+
 // ==========================================
-// DIRECTORIO Y CARGA DE DATOS
+// DIRECTORIO Y FILTROS INTELIGENTES
 // ==========================================
 const listaServicios = document.getElementById('lista-servicios');
 const contadorTexto = document.getElementById('contador-profesionales');
 let filtroActivo = ""; 
 
 async function cargarServicios() {
-    if (!listaServicios) return;
+    if(!listaServicios) return;
     
     listaServicios.innerHTML = `
         <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
@@ -563,8 +439,8 @@ async function cargarServicios() {
         listaServicios.innerHTML = ""; 
         window.directorioData = {}; 
         
-        if (contadorTexto) {
-            contadorTexto.innerText = `Ya somos ${querySnapshot.size} profesionales listos para ayudarte`;
+        if(contadorTexto) {
+            contadorTexto.innerText = `⭐ Ya somos ${querySnapshot.size} profesionales listos para ayudarte`;
         }
 
         const tarjetaCtaHTML = `
@@ -594,29 +470,63 @@ async function cargarServicios() {
             const data = docSnap.data();
             window.directorioData[docSnap.id] = data; 
             
+            const waNumero = formatearWhatsapp(data.whatsapp); 
             const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
-            const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
+            const mensajeWA = encodeURIComponent(`Hola ${sanitize(data.nombre)}, vi tu servicio de ${sanitize(data.categoria)} en el Directorio de Santa Ana. Quería hacerte una consulta...`);
+            
+            let badgesHTML = "";
+            if(esDestacado) badgesHTML += `<span class="badge" style="background:#fef08a; color:#854d0e; border: 1px solid #fde047;">⭐ DESTACADO</span>`;
+            if(data.urgencias) badgesHTML += `<span class="badge badge-red">🚨 24hs</span>`;
+            if(data.presupuesto) badgesHTML += `<span class="badge badge-blue">💡 Sin Cargo</span>`;
 
-            // GRILLA LIMPIA: solo Categoría, Nombre, Descripción y Ubicación.
-            // Sin botones de Compartir ni Favoritos. Toda la interacción va en el Modal.
+            let redesHTML = "";
+            if (data.instagram || data.facebook) {
+                redesHTML += `<div class="redes-sociales">`;
+                if (data.instagram) {
+                    let igLink = formatearEnlace(data.instagram, 'instagram');
+                    redesHTML += `<a href="${igLink}" target="_blank" rel="noopener noreferrer" class="btn-social btn-ig" onclick="event.stopPropagation();">Instagram</a>`;
+                }
+                if (data.facebook) {
+                    let fbLink = formatearEnlace(data.facebook, 'facebook');
+                    redesHTML += `<a href="${fbLink}" target="_blank" rel="noopener noreferrer" class="btn-social btn-fb" onclick="event.stopPropagation();">Facebook</a>`;
+                }
+                redesHTML += `</div>`;
+            }
+
+            const ubicacionSafe = (data.ubicacion || "").toString().toLowerCase();
+            const esOnline = ubicacionSafe.includes('online') ? 'true' : 'false';
+            const esDomicilio = ubicacionSafe.includes('domicilio') ? 'true' : 'false';
+            
+            const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
+            const shareIcon = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
+
+            // MODIFICADO: btn-share ahora pasa el id como primer argumento
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up ${claseAdicional}" 
                          style="animation-delay: ${delayAnimacion}s;"
                          onclick="abrirModal('${docSnap.id}')"
-                         data-id="${docSnap.id}"
                          data-nombre="${sanitize(data.nombre)}"
                          data-categoria="${sanitize(data.categoria)}"
                          data-descripcion="${sanitize(data.descripcion)}"
                          data-urgencias="${data.urgencias || false}"
-                         data-online="${(data.ubicacion || "").toLowerCase().includes('online') ? 'true' : 'false'}"
-                         data-domicilio="${(data.ubicacion || "").toLowerCase().includes('domicilio') ? 'true' : 'false'}">
-
-                    <div class="categoria-tag">${sanitize(data.categoria)}</div>
+                         data-online="${esOnline}"
+                         data-domicilio="${esDomicilio}">
+                    <div class="card-header">
+                        <div class="categoria-tag">${sanitize(data.categoria)}</div>
+                        <button class="btn-share" onclick="event.stopPropagation(); compartirPerfil('${docSnap.id}', '${sanitize(data.nombre)}', '${sanitize(data.categoria)}')" title="Compartir Perfil" aria-label="Compartir Perfil">
+                            ${shareIcon}
+                        </button>
+                    </div>
                     <h2>${sanitize(data.nombre)}</h2>
+                    ${badgesHTML !== "" ? `<div class="badges-container">${badgesHTML}</div>` : ""}
                     <p class="descripcion">${sanitize(data.descripcion)}</p>
                     <div class="info-extra">
                         <span>📍 ${sanitize(data.ubicacion || 'Consultar')}</span>
                     </div>
+                    ${redesHTML}
+                    <a href="https://wa.me/${waNumero}?text=${mensajeWA}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp pulse-subtle" onclick="event.stopPropagation();">
+                        💬 Consultar
+                    </a>
                 </article>
             `;
             
@@ -627,22 +537,26 @@ async function cargarServicios() {
         
         listaServicios.innerHTML = tarjetaCtaHTML + htmlDestacados + htmlNormales;
 
-        // Deep link: abre el modal directamente si la URL trae ?id=...
-        setTimeout(() => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const idCompartido = urlParams.get('id');
-            if (idCompartido && window.directorioData[idCompartido]) {
-                abrirModal(idCompartido);
-            }
-        }, 300);
+        // NUEVO: Deep Linking — abre el modal si la URL trae ?id=
+        checkDeepLink();
 
     } catch (error) { 
         listaServicios.innerHTML = "<p style='color: red; text-align:center;'>Error de conexión. Intente refrescar la página.</p>"; 
     }
 }
 
+// NUEVO: lee ?id= de la URL y abre el modal correspondiente
+function checkDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id && window.directorioData[id]) {
+        abrirModal(id);
+    }
+}
+
 function aplicarFiltros() {
     const buscador = document.getElementById('buscador');
+    
     const textoBusqueda = buscador ? quitarAcentos(buscador.value.toLowerCase().trim()) : '';
     const terminosBusqueda = textoBusqueda.split(' ').filter(termino => termino.length > 0);
     
@@ -650,16 +564,15 @@ function aplicarFiltros() {
     let tarjetasVisibles = 0;
 
     tarjetas.forEach(tarjeta => {
-        if (tarjeta.classList.contains('tarjeta-cta-unirse')) return;
+        if(tarjeta.classList.contains('tarjeta-cta-unirse')) return;
         
-        const contenido = quitarAcentos(
-            (tarjeta.dataset.nombre + " " + tarjeta.dataset.categoria + " " + tarjeta.dataset.descripcion).toLowerCase()
-        );
+        const contenido = quitarAcentos((tarjeta.dataset.nombre + " " + tarjeta.dataset.categoria + " " + tarjeta.dataset.descripcion).toLowerCase());
+        
         const coincideTexto = terminosBusqueda.every(termino => contenido.includes(termino));
         
         let coincideFiltroRapido = true;
         if (filtroActivo === 'urgencias') coincideFiltroRapido = tarjeta.dataset.urgencias === 'true';
-        if (filtroActivo === 'online')    coincideFiltroRapido = tarjeta.dataset.online === 'true';
+        if (filtroActivo === 'online') coincideFiltroRapido = tarjeta.dataset.online === 'true';
         if (filtroActivo === 'domicilio') coincideFiltroRapido = tarjeta.dataset.domicilio === 'true';
         
         if ((coincideTexto || terminosBusqueda.length === 0) && coincideFiltroRapido) {
@@ -682,7 +595,7 @@ function aplicarFiltros() {
 
 let timeoutBusqueda;
 const inputBuscador = document.getElementById('buscador');
-if (inputBuscador) {
+if(inputBuscador) {
     inputBuscador.addEventListener('input', () => {
         clearTimeout(timeoutBusqueda);
         timeoutBusqueda = setTimeout(aplicarFiltros, 300);
