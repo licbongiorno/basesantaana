@@ -45,11 +45,13 @@
     transition: background-color 0.3s, color 0.3s, border-color 0.3s; 
 }
 
+/* Scrollbar Personalizado App Nativa */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-color); }
 ::-webkit-scrollbar-thumb { background: rgba(2, 119, 189, 0.4); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
 
+/* Anillos de Enfoque Accesibles */
 *:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 
 body { 
@@ -64,6 +66,7 @@ body.modal-open { overflow: hidden; }
     width: 100%; max-width: 1200px; margin: 2rem auto; padding: 0 1rem; flex: 1;
 }
 
+/* Glassmorphism Header Premium */
 .header { 
     background: var(--header-grad); color: #fff; padding: 1.5rem 1rem 2rem 1rem; 
     text-align: center; position: sticky; top: 0; z-index: 100;
@@ -105,15 +108,9 @@ body.modal-open { overflow: hidden; }
 .filter-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;}
 .filter-btn.active { background: #fff; color: var(--primary-color); border-color: #fff; }
 
-.grid-servicios { 
-    display: grid; 
-    grid-template-columns: 1fr; 
-    gap: 1.5rem; 
-}
-@media (min-width: 600px) {
-    .grid-servicios { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-}
+.grid-servicios { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 
+/* Micro-interacciones de Tarjetas */
 .tarjeta-servicio { 
     background: var(--card-bg); border-radius: 20px; padding: 1.8rem; cursor: pointer;
     box-shadow: var(--shadow-sm); display: flex; flex-direction: column; 
@@ -133,7 +130,11 @@ body.modal-open { overflow: hidden; }
     justify-content: center; align-items: center; text-align: center;
 }
 
-.categoria-tag { background-color: rgba(2, 119, 189, 0.1); color: var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-bottom: 0.8rem; }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;}
+.categoria-tag { background-color: rgba(2, 119, 189, 0.1); color: var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.btn-share { background: none; border: none; cursor: pointer; color: var(--text-muted); opacity: 0.6; padding: 5px; transition: transform 0.2s; }
+.btn-share:hover { opacity: 1; transform: scale(1.1); color: var(--primary-color);}
+
 .tarjeta-servicio h2 { font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 700; color: var(--text-color);}
 .descripcion { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.2rem; flex-grow: 1; line-height: 1.5; 
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
@@ -143,7 +144,6 @@ body.modal-open { overflow: hidden; }
 .badge { font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.6rem; border-radius: 8px; }
 .badge-red { background-color: rgba(220, 38, 38, 0.1); color: #dc2626; }
 .badge-blue { background-color: rgba(2, 132, 199, 0.1); color: #0284c7; }
-.badge-destacado { background-color: var(--badge-destacado-bg); color: var(--badge-destacado-color); border: 1px solid var(--badge-destacado-border); }
 
 .info-extra { font-size: 0.85rem; margin-bottom: 1.2rem; color: var(--text-muted); font-weight: 600; padding-top: 1rem; border-top: 1px solid var(--border-color);}
 
@@ -152,6 +152,7 @@ body.modal-open { overflow: hidden; }
 .btn-ig { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
 .btn-fb { background: #1877f2; }
 
+/* Botones con Neuromarketing */
 .btn-whatsapp { 
     background: linear-gradient(135deg, #25d366 0%, #16a34a 100%); color: #fff; text-align: center; 
     padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: block; border: none; cursor: pointer; box-shadow: var(--shadow-sm); width: 100%;
@@ -161,9 +162,7 @@ body.modal-open { overflow: hidden; }
 .btn-whatsapp:active { transform: translateY(1px); }
 .btn-whatsapp:disabled { background: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
 
-/* ==========================================
-   MODAL
-   ========================================== */
+/* Modal Inteligente */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -174,124 +173,20 @@ body.modal-open { overflow: hidden; }
 .modal-content {
     background: var(--card-bg); width: 100%; max-width: 600px; 
     max-height: 90vh; overflow-y: auto; 
-    border-radius: 20px; padding: 2.5rem 2rem 2rem 2rem; 
+    border-radius: 20px; padding: 2rem;
     position: relative; transform: scale(0.95); transition: transform 0.3s ease;
     box-shadow: var(--shadow-lg); border-top: 5px solid var(--primary-color);
 }
 .modal-overlay.active .modal-content { transform: scale(1); }
-
-/* X bien aislada: posición absoluta, fuera del flujo del contenido */
 .btn-close {
-    position: absolute; top: 14px; right: 14px;
-    background: var(--input-bg);
-    border: 1px solid var(--border-color);
-    font-size: 1.25rem; color: var(--text-muted); cursor: pointer;
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s, color 0.2s;
-    z-index: 10;
-    line-height: 1;
+    position: absolute; top: 15px; right: 20px; background: none; border: none;
+    font-size: 2rem; color: var(--text-muted); cursor: pointer; line-height: 1; z-index: 10;
 }
-.btn-close:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
-
-/* ==========================================
-   BOTONES DE ACCIÓN DEL MODAL (Fav + Compartir)
-   ========================================== */
-
-/* Fila de acciones: se ubica justo antes del CTA de WhatsApp */
-.modal-actions-row {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-}
-
-/* Base compartida */
-.btn-modal-action {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0.75rem 1rem;
-    background: var(--input-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-}
-.btn-modal-action:hover {
-    background: var(--border-color);
-    color: var(--text-color);
-}
-
-/* Botón Compartir */
-.btn-share:hover {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-    background: rgba(2, 119, 189, 0.06);
-}
-
-/* ==========================================
-   SVG HEART — estado vacío y relleno
-   ========================================== */
-
-/* El SVG hereda el color del botón padre */
-.fav-svg {
-    flex-shrink: 0;
-    /* La transición de fill/stroke debe declararse en el elemento SVG
-       porque 'transition: all' en * no cubre propiedades SVG en todos los motores */
-    transition: fill 0.2s ease, stroke 0.2s ease, color 0.2s ease;
-}
-
-/* Estado: guardado */
-.btn-fav-icon.es-favorito {
-    color: #ef4444;
-    border-color: #fca5a5;
-    background: #fee2e2;
-
-    /* Animación pop al momento de activarse */
-    animation: heartPop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-/* Forzamos fill rojo en el SVG cuando el botón está activo.
-   No usamos 'fill: currentColor' en el keyframe porque currentColor
-   no interpola bien en todos los navegadores.  */
-.btn-fav-icon.es-favorito .fav-svg {
-    fill: #ef4444;
-    stroke: #ef4444;
-}
-
-/* Efecto pop: escala up → down → reposo */
-@keyframes heartPop {
-    0%   { transform: scale(1); }
-    35%  { transform: scale(1.3); }
-    65%  { transform: scale(0.88); }
-    100% { transform: scale(1); }
-}
-
-/* Hover sobre el botón de fav cuando NO está activo: pre-visualización */
-.btn-fav-icon:not(.es-favorito):hover {
-    color: #ef4444;
-    border-color: #fca5a5;
-    background: #fff1f2;
-}
-
-/* ==========================================
-   TABS DASHBOARD
-   ========================================== */
-.dashboard-tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); }
-.tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
-.tab-btn:hover { color: var(--primary-color); }
-.tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 
 .form-container { max-width: 650px; margin: 0 auto; width: 100%; }
 .formulario-estilizado { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
 .grupo-input { display: flex; flex-direction: column; gap: 0.5rem; }
+/* FIX DIAMANTE: Cursor pointer para indicar que el texto es clickeable para hacer foco en el input */
 .grupo-input label { font-weight: 600; font-size: 0.9rem; color: var(--text-color); cursor: pointer; display: inline-block;}
 .grupo-input input, .grupo-input select, .grupo-input textarea { 
     padding: 0.9rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 16px; background-color: var(--input-bg); color: var(--text-color); width: 100%;
@@ -299,23 +194,40 @@ body.modal-open { overflow: hidden; }
 .grupo-input input:focus, .grupo-input select:focus, .grupo-input textarea:focus { outline: none; border-color: var(--primary-color); }
 
 .responsive-row { display: flex; flex-direction: row; gap: 1rem; }
+
 .item-dashboard { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 1.2rem; border-radius: 12px; border-left: 4px solid var(--primary-color); border: 1px solid var(--border-color); gap: 1rem;}
 
 .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; transform: translateY(20px); }
 @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
+/* Mejor Skeleton Loader */
 .skeleton { background: var(--input-bg); border-radius: 20px; padding: 1.8rem; height: 350px; border-top: 5px solid var(--border-color); position: relative; overflow: hidden; }
 .skeleton::after { content: ""; position: absolute; top: 0; left: -150%; width: 150%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); animation: shimmer 2s infinite ease-in-out; }
 @keyframes shimmer { 100% { left: 100%; } }
 
 .footer { text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); font-size: 0.9rem; border-top: 1px solid var(--border-color); background: var(--card-bg); width: 100%; }
-.tarjeta-destacada { border-top: 5px solid #eab308 !important; background: linear-gradient(180deg, var(--destacado-bg-start) 0%, var(--card-bg) 100%); box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2); }
 
+.tarjeta-destacada {
+    border-top: 5px solid #eab308 !important; 
+    background: linear-gradient(180deg, var(--destacado-bg-start) 0%, var(--card-bg) 100%);
+    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
+}
+
+/* Limpieza Mobile Formularios */
 body.modo-formulario .header { position: relative; padding-bottom: 1.5rem; }
-body.modo-formulario .search-container, body.modo-formulario .quick-filters, body.modo-formulario .trust-counter, body.modo-formulario .location-text { display: none !important; }
+body.modo-formulario .search-container,
+body.modo-formulario .quick-filters,
+body.modo-formulario .trust-counter,
+body.modo-formulario .location-text { display: none !important; }
 
+/* MEDIA QUERIES FINALES */
 @media (max-width: 768px) {
-    .header { position: relative !important; padding-bottom: 1.5rem; }
+    /* FIX DIAMANTE: Desactiva el header fijo en móviles para liberar pantalla */
+    .header { 
+        position: relative !important; 
+        padding-bottom: 1.5rem;
+    }
+    
     .ocultar-movil { display: none; }
     .header-top { gap: 0.5rem; }
     .btn-publicar, .btn-sugerencias-header { padding: 0.5rem 0.8rem; }
@@ -323,8 +235,4 @@ body.modo-formulario .search-container, body.modo-formulario .quick-filters, bod
     .item-dashboard { flex-direction: column; align-items: flex-start; }
     .item-dashboard > div:last-child { width: 100%; display: flex; gap: 0.5rem; }
     .item-dashboard button { flex: 1; }
-
-    /* En móvil los botones de acción ocupan todo el ancho */
-    .modal-actions-row { flex-direction: row; }
-    .btn-modal-action { font-size: 0.85rem; padding: 0.7rem 0.5rem; }
 }
