@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+// Agregamos setDoc a las importaciones
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB989b4dx4ao6So14IWRQwwZ0JybGVMFGQ",
@@ -17,6 +18,8 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
+// Variable global para mantener los favoritos en memoria mientras el usuario navega
+window.misFavoritos = []; 
 
 // ==========================================
 // UTILIDADES
@@ -130,11 +133,28 @@ const seccionFormulario = document.getElementById('seccion-formulario');
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioActual = user;
+        
+        // --- NUEVO: Traer favoritos de la nube al iniciar sesión ---
+        try {
+            const userDocRef = doc(db, "usuarios", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists() && userDoc.data().favoritos) {
+                window.misFavoritos = userDoc.data().favoritos;
+            } else {
+                window.misFavoritos = [];
+            }
+        } catch (error) {
+            console.error("Error al cargar favoritos de la nube:", error);
+            window.misFavoritos = [];
+        }
+        // -----------------------------------------------------------
+
         if(seccionLogin) seccionLogin.classList.add('hidden');
         if(btnLogout) btnLogout.classList.remove('hidden');
         mostrarDashboard();
     } else {
         usuarioActual = null;
+        window.misFavoritos = []; // Limpiamos favoritos si cierra sesión
         if(seccionLogin) seccionLogin.classList.remove('hidden');
         if(seccionDashboard) seccionDashboard.classList.add('hidden');
         if(seccionFormulario) seccionFormulario.classList.add('hidden');
@@ -355,18 +375,13 @@ if(formServicio) {
 // ==========================================
 
 function obtenerFavoritos() {
-    if(!usuarioActual) return [];
-    return JSON.parse(localStorage.getItem('favs_santa_ana_' + usuarioActual.uid)) || [];
+    return window.misFavoritos || []; // Ahora leemos de la variable global sincronizada
 }
 
 // -----------------------------------------------
-// toggleFavorito
-// Reglas:
-//  - Sin sesión → alerta y salida. Sin redirigir.
-//  - Con sesión → guarda en localStorage[favs_santa_ana_UID].
-//  - Actualiza el SVG del botón en el modal sin re-renderizar el DOM.
+// toggleFavorito (AHORA SINCRONIZADO A LA NUBE)
 // -----------------------------------------------
-window.toggleFavorito = function(id) {
+window.toggleFavorito = async function(id) {
     if (!usuarioActual) {
         alert("Debes iniciar sesión para guardar favoritos.");
         return;
@@ -376,33 +391,39 @@ window.toggleFavorito = function(id) {
     const btn = document.getElementById('btn-fav-modal');
     const estaEnFavs = favs.includes(id);
 
-    if (estaEnFavs) {
-        // Quitar de favoritos
-        favs = favs.filter(favId => favId !== id);
-        if (btn) {
-            btn.classList.remove('es-favorito');
-            btn.innerHTML = SVG_HEART_EMPTY + '<span class="fav-label">Guardar</span>';
-            btn.setAttribute('aria-label', 'Guardar en favoritos');
-        }
-    } else {
-        // Agregar a favoritos
-        favs.push(id);
-        if (btn) {
-            btn.classList.add('es-favorito');
-            btn.innerHTML = SVG_HEART_FILLED + '<span class="fav-label">Guardado</span>';
-            btn.setAttribute('aria-label', 'Quitar de favoritos');
-        }
-    }
+    // Referencia al documento del usuario en Firestore
+    const userDocRef = doc(db, "usuarios", usuarioActual.uid);
 
-    localStorage.setItem('favs_santa_ana_' + usuarioActual.uid, JSON.stringify(favs));
+    try {
+        if (estaEnFavs) {
+            // Quitar de favoritos localmente
+            window.misFavoritos = favs.filter(favId => favId !== id);
+            if (btn) {
+                btn.classList.remove('es-favorito');
+                btn.innerHTML = SVG_HEART_EMPTY + '<span class="fav-label">Guardar</span>';
+                btn.setAttribute('aria-label', 'Guardar en favoritos');
+            }
+        } else {
+            // Agregar a favoritos localmente
+            window.misFavoritos.push(id);
+            if (btn) {
+                btn.classList.add('es-favorito');
+                btn.innerHTML = SVG_HEART_FILLED + '<span class="fav-label">Guardado</span>';
+                btn.setAttribute('aria-label', 'Quitar de favoritos');
+            }
+        }
+        
+        // Sincronizar con la base de datos (merge: true crea el documento si no existe)
+        await setDoc(userDocRef, { favoritos: window.misFavoritos }, { merge: true });
+
+    } catch (error) {
+        console.error("Error guardando favorito en la nube:", error);
+        alert("Hubo un problema guardando tu favorito. Verifica tu conexión.");
+    }
 };
 
 // -----------------------------------------------
 // compartirAnuncio
-// Reglas:
-//  - Disponible sin login.
-//  - URL siempre construida con: origin + pathname + ?id=DOCID
-//  - navigator.share si está disponible, clipboard.writeText como fallback.
 // -----------------------------------------------
 window.compartirAnuncio = function(id, nombre, categoria) {
     const urlCompartir = window.location.origin + window.location.pathname + '?id=' + id;
@@ -417,7 +438,6 @@ window.compartirAnuncio = function(id, nombre, categoria) {
         navigator.clipboard.writeText(urlCompartir).then(() => {
             alert('Enlace copiado. Ya podés pegarlo en WhatsApp o redes sociales.');
         }).catch(() => {
-            // Fallback para navegadores sin clipboard API
             prompt('Copiá este enlace:', urlCompartir);
         });
     }
@@ -428,16 +448,11 @@ const modalBody = document.getElementById('modal-body');
 
 // -----------------------------------------------
 // abrirModal
-// Reglas de grilla: las tarjetas NO tienen botones.
-// Toda la interacción (fav, compartir, WA) vive aquí.
-// Botones de acción (fav + compartir) van ANTES del CTA de WhatsApp.
-// X de cierre ya está posicionada en el HTML (fuera de modal-body).
 // -----------------------------------------------
 window.abrirModal = function(id) {
     const data = window.directorioData[id];
     if (!data) return;
 
-    // Deep linking: actualiza la URL para que se pueda compartir
     history.pushState(null, null, '?id=' + id);
 
     const waNumero = formatearWhatsapp(data.whatsapp);
@@ -446,13 +461,11 @@ window.abrirModal = function(id) {
         `Hola ${sanitize(data.nombre)}, vi tu anuncio de ${sanitize(data.categoria)} en el Directorio de Santa Ana. Quería hacerte una consulta...`
     );
 
-    // Badges (sin emojis inline: se usan clases con before si se desea, aquí texto plano)
     let badgesHTML = "";
     if (esDestacado) badgesHTML += `<span class="badge badge-destacado">DESTACADO</span>`;
     if (data.urgencias)  badgesHTML += `<span class="badge badge-red">URGENCIAS 24H</span>`;
     if (data.presupuesto) badgesHTML += `<span class="badge badge-blue">PRESUPUESTO SIN CARGO</span>`;
 
-    // Redes sociales
     let redesHTML = "";
     if (data.instagram || data.facebook) {
         redesHTML += `<div class="redes-sociales" style="margin-top: 1.5rem;">`;
@@ -465,7 +478,6 @@ window.abrirModal = function(id) {
         redesHTML += `</div>`;
     }
 
-    // Estado inicial del botón de favorito
     const favs = obtenerFavoritos();
     const esFav = favs.includes(id);
     const svgCorazon = esFav ? SVG_HEART_FILLED : SVG_HEART_EMPTY;
@@ -597,8 +609,6 @@ async function cargarServicios() {
             const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
             const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
 
-            // GRILLA LIMPIA: solo Categoría, Nombre, Descripción y Ubicación.
-            // Sin botones de Compartir ni Favoritos. Toda la interacción va en el Modal.
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up ${claseAdicional}" 
                          style="animation-delay: ${delayAnimacion}s;"
@@ -627,7 +637,6 @@ async function cargarServicios() {
         
         listaServicios.innerHTML = tarjetaCtaHTML + htmlDestacados + htmlNormales;
 
-        // Deep link: abre el modal directamente si la URL trae ?id=...
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const idCompartido = urlParams.get('id');
