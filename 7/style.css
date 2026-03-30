@@ -328,3 +328,95 @@ body.modo-formulario .search-container, body.modo-formulario .quick-filters, bod
     .modal-actions-row { flex-direction: row; }
     .btn-modal-action { font-size: 0.85rem; padding: 0.7rem 0.5rem; }
 }
+/* ==========================================
+   NUEVOS ESTILOS: ACCIONES EN TARJETA Y TOAST
+   ========================================== */
+.card-actions-top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 2; /* Asegura que estén sobre el contenido */
+}
+
+.btn-icon-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    color: var(--text-muted);
+}
+
+.btn-icon-card:hover {
+    transform: scale(1.05);
+    background: var(--input-bg);
+}
+
+/* Estado activo (cuando es favorito) */
+.btn-fav-card.active {
+    color: #ef4444; /* Rojo */
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+/* Pie de tarjeta: "Ver más datos" */
+.card-footer-more {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--border-color);
+    text-align: center;
+    transition: background 0.2s;
+    border-radius: 0 0 12px 12px;
+}
+
+.tarjeta-servicio:hover .card-footer-more {
+    background: rgba(2, 119, 189, 0.05); /* Sutil fondo azulado al pasar el mouse */
+}
+
+.ver-mas-texto {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Notificación flotante (Toast) */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.toast-container.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Ajuste para que los botones absolutos no tapen el título */
+.tarjeta-servicio h2.titulo-con-margen {
+    padding-right: 80px; 
+}
