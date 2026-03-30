@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB989b4dx4ao6So14IWRQwwZ0JybGVMFGQ",
@@ -17,9 +17,10 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 window.directorioData = {};
+window.misFavoritos = []; 
 
 // ==========================================
-// UTILIDADES
+// UTILIDADES Y TOAST
 // ==========================================
 function sanitize(str) {
     if (!str) return '';
@@ -58,8 +59,24 @@ function formatearWhatsapp(numero) {
     return limpio;
 }
 
+// Función global para mostrar el cartelito
+window.mostrarToast = function(mensaje) {
+    let toast = document.getElementById('toast-msg');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-msg';
+        toast.className = 'toast-container';
+        document.body.appendChild(toast);
+    }
+    toast.innerText = mensaje;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 1500);
+};
+
 // ==========================================
-// SVG ICONS (inline, estilo minimalista)
+// SVG ICONS
 // ==========================================
 const SVG_HEART_EMPTY = `<svg class="fav-svg" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 
@@ -130,11 +147,25 @@ const seccionFormulario = document.getElementById('seccion-formulario');
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioActual = user;
+        
+        try {
+            const userDocRef = doc(db, "usuarios", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists() && userDoc.data().favoritos) {
+                window.misFavoritos = userDoc.data().favoritos;
+            } else {
+                window.misFavoritos = [];
+            }
+        } catch (error) {
+            window.misFavoritos = [];
+        }
+
         if(seccionLogin) seccionLogin.classList.add('hidden');
         if(btnLogout) btnLogout.classList.remove('hidden');
         mostrarDashboard();
     } else {
         usuarioActual = null;
+        window.misFavoritos = [];
         if(seccionLogin) seccionLogin.classList.remove('hidden');
         if(seccionDashboard) seccionDashboard.classList.add('hidden');
         if(seccionFormulario) seccionFormulario.classList.add('hidden');
@@ -164,7 +195,7 @@ if(btnLogout) {
 }
 
 // ==========================================
-// TABS DEL DASHBOARD (Anuncios vs Favoritos)
+// TABS DEL DASHBOARD
 // ==========================================
 const tabAnuncios = document.getElementById('tab-mis-anuncios');
 const tabFavoritos = document.getElementById('tab-mis-favoritos');
@@ -250,7 +281,7 @@ window.renderizarMisFavoritosDash = function() {
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button onclick="cerrarModalPerfil(); abrirModal('${id}')" style="background:var(--primary-color); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Ver Anuncio</button>
-                        <button onclick="toggleFavorito('${id}'); renderizarMisFavoritosDash();" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Quitar</button>
+                        <button onclick="toggleFavorito('${id}');" style="background:#fee2e2; color:#ef4444; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer;">Quitar</button>
                     </div>
                 </div>
             `;
@@ -355,55 +386,67 @@ if(formServicio) {
 // ==========================================
 
 function obtenerFavoritos() {
-    if(!usuarioActual) return [];
-    return JSON.parse(localStorage.getItem('favs_santa_ana_' + usuarioActual.uid)) || [];
+    return window.misFavoritos || [];
 }
 
-// -----------------------------------------------
-// toggleFavorito
-// Reglas:
-//  - Sin sesión → alerta y salida. Sin redirigir.
-//  - Con sesión → guarda en localStorage[favs_santa_ana_UID].
-//  - Actualiza el SVG del botón en el modal sin re-renderizar el DOM.
-// -----------------------------------------------
-window.toggleFavorito = function(id) {
+window.toggleFavorito = async function(id) {
     if (!usuarioActual) {
-        alert("Debes iniciar sesión para guardar favoritos.");
+        mostrarToast("⚠️ Iniciá sesión para guardar favoritos");
         return;
     }
 
     let favs = obtenerFavoritos();
-    const btn = document.getElementById('btn-fav-modal');
     const estaEnFavs = favs.includes(id);
+    const userDocRef = doc(db, "usuarios", usuarioActual.uid);
 
-    if (estaEnFavs) {
-        // Quitar de favoritos
-        favs = favs.filter(favId => favId !== id);
-        if (btn) {
-            btn.classList.remove('es-favorito');
-            btn.innerHTML = SVG_HEART_EMPTY + '<span class="fav-label">Guardar</span>';
-            btn.setAttribute('aria-label', 'Guardar en favoritos');
+    try {
+        if (estaEnFavs) {
+            window.misFavoritos = favs.filter(favId => favId !== id);
+            mostrarToast("❌ Quitado de favoritos");
+        } else {
+            window.misFavoritos.push(id);
+            mostrarToast("❤️ Agregado a favoritos");
         }
-    } else {
-        // Agregar a favoritos
-        favs.push(id);
-        if (btn) {
-            btn.classList.add('es-favorito');
-            btn.innerHTML = SVG_HEART_FILLED + '<span class="fav-label">Guardado</span>';
-            btn.setAttribute('aria-label', 'Quitar de favoritos');
+        
+        // Sincronizar nube
+        await setDoc(userDocRef, { favoritos: window.misFavoritos }, { merge: true });
+
+        // Actualizar botón de la tarjeta en el directorio
+        const cardFavBtn = document.querySelector(`.tarjeta-servicio[data-id="${id}"] .btn-fav-card`);
+        if (cardFavBtn) {
+            if (!estaEnFavs) {
+                cardFavBtn.classList.add('active');
+                cardFavBtn.innerHTML = SVG_HEART_FILLED;
+            } else {
+                cardFavBtn.classList.remove('active');
+                cardFavBtn.innerHTML = SVG_HEART_EMPTY;
+            }
         }
+
+        // Actualizar botón del modal si está abierto
+        const btnModal = document.getElementById('btn-fav-modal');
+        if (btnModal) {
+            const esFavAhora = !estaEnFavs;
+            if (esFavAhora) {
+                btnModal.classList.add('es-favorito');
+                btnModal.innerHTML = SVG_HEART_FILLED + '<span class="fav-label">Guardado</span>';
+            } else {
+                btnModal.classList.remove('es-favorito');
+                btnModal.innerHTML = SVG_HEART_EMPTY + '<span class="fav-label">Guardar</span>';
+            }
+        }
+
+        // Refrescar lista de favoritos en el panel si el usuario está mirándola
+        const contFavoritos = document.getElementById('contenido-mis-favoritos');
+        if (contFavoritos && !contFavoritos.classList.contains('hidden')) {
+            renderizarMisFavoritosDash();
+        }
+
+    } catch (error) {
+        mostrarToast("⚠️ Hubo un problema de conexión");
     }
-
-    localStorage.setItem('favs_santa_ana_' + usuarioActual.uid, JSON.stringify(favs));
 };
 
-// -----------------------------------------------
-// compartirAnuncio
-// Reglas:
-//  - Disponible sin login.
-//  - URL siempre construida con: origin + pathname + ?id=DOCID
-//  - navigator.share si está disponible, clipboard.writeText como fallback.
-// -----------------------------------------------
 window.compartirAnuncio = function(id, nombre, categoria) {
     const urlCompartir = window.location.origin + window.location.pathname + '?id=' + id;
 
@@ -415,9 +458,8 @@ window.compartirAnuncio = function(id, nombre, categoria) {
         }).catch(console.error);
     } else {
         navigator.clipboard.writeText(urlCompartir).then(() => {
-            alert('Enlace copiado. Ya podés pegarlo en WhatsApp o redes sociales.');
+            mostrarToast('✅ Enlace copiado al portapapeles');
         }).catch(() => {
-            // Fallback para navegadores sin clipboard API
             prompt('Copiá este enlace:', urlCompartir);
         });
     }
@@ -426,18 +468,10 @@ window.compartirAnuncio = function(id, nombre, categoria) {
 const modalPerfil = document.getElementById('modal-perfil');
 const modalBody = document.getElementById('modal-body');
 
-// -----------------------------------------------
-// abrirModal
-// Reglas de grilla: las tarjetas NO tienen botones.
-// Toda la interacción (fav, compartir, WA) vive aquí.
-// Botones de acción (fav + compartir) van ANTES del CTA de WhatsApp.
-// X de cierre ya está posicionada en el HTML (fuera de modal-body).
-// -----------------------------------------------
 window.abrirModal = function(id) {
     const data = window.directorioData[id];
     if (!data) return;
 
-    // Deep linking: actualiza la URL para que se pueda compartir
     history.pushState(null, null, '?id=' + id);
 
     const waNumero = formatearWhatsapp(data.whatsapp);
@@ -446,13 +480,11 @@ window.abrirModal = function(id) {
         `Hola ${sanitize(data.nombre)}, vi tu anuncio de ${sanitize(data.categoria)} en el Directorio de Santa Ana. Quería hacerte una consulta...`
     );
 
-    // Badges (sin emojis inline: se usan clases con before si se desea, aquí texto plano)
     let badgesHTML = "";
     if (esDestacado) badgesHTML += `<span class="badge badge-destacado">DESTACADO</span>`;
     if (data.urgencias)  badgesHTML += `<span class="badge badge-red">URGENCIAS 24H</span>`;
     if (data.presupuesto) badgesHTML += `<span class="badge badge-blue">PRESUPUESTO SIN CARGO</span>`;
 
-    // Redes sociales
     let redesHTML = "";
     if (data.instagram || data.facebook) {
         redesHTML += `<div class="redes-sociales" style="margin-top: 1.5rem;">`;
@@ -465,13 +497,11 @@ window.abrirModal = function(id) {
         redesHTML += `</div>`;
     }
 
-    // Estado inicial del botón de favorito
     const favs = obtenerFavoritos();
     const esFav = favs.includes(id);
     const svgCorazon = esFav ? SVG_HEART_FILLED : SVG_HEART_EMPTY;
     const labelFav = esFav ? 'Guardado' : 'Guardar';
     const claseFav = esFav ? 'es-favorito' : '';
-    const ariaFav = esFav ? 'Quitar de favoritos' : 'Guardar en favoritos';
 
     if (modalBody) {
         modalBody.innerHTML = `
@@ -494,20 +524,11 @@ window.abrirModal = function(id) {
             ${redesHTML}
 
             <div class="modal-actions-row">
-                <button
-                    id="btn-fav-modal"
-                    class="btn-modal-action btn-fav-icon ${claseFav}"
-                    onclick="toggleFavorito('${id}')"
-                    aria-label="${ariaFav}"
-                >
+                <button id="btn-fav-modal" class="btn-modal-action btn-fav-icon ${claseFav}" onclick="toggleFavorito('${id}')">
                     ${svgCorazon}
                     <span class="fav-label">${labelFav}</span>
                 </button>
-                <button
-                    class="btn-modal-action btn-share"
-                    onclick="compartirAnuncio('${id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')"
-                    aria-label="Compartir anuncio"
-                >
+                <button class="btn-modal-action btn-share" onclick="compartirAnuncio('${id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')">
                     ${SVG_SHARE}
                     <span>Compartir</span>
                 </button>
@@ -589,6 +610,7 @@ async function cargarServicios() {
         let delayAnimacion = 0.1; 
         let htmlDestacados = "";
         let htmlNormales = "";
+        const favsGuardados = obtenerFavoritos();
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
@@ -596,12 +618,12 @@ async function cargarServicios() {
             
             const esDestacado = (data.nombre || "").toLowerCase().includes('nathalia andrada');
             const claseAdicional = esDestacado ? 'tarjeta-destacada' : '';
+            const esFav = favsGuardados.includes(docSnap.id);
 
-            // GRILLA LIMPIA: solo Categoría, Nombre, Descripción y Ubicación.
-            // Sin botones de Compartir ni Favoritos. Toda la interacción va en el Modal.
+            // Se genera el HTML integrando los nuevos botones absolutos y el pie de Ver Más
             const tarjetaHTML = `
                 <article class="tarjeta-servicio fade-in-up ${claseAdicional}" 
-                         style="animation-delay: ${delayAnimacion}s;"
+                         style="animation-delay: ${delayAnimacion}s; position: relative;"
                          onclick="abrirModal('${docSnap.id}')"
                          data-id="${docSnap.id}"
                          data-nombre="${sanitize(data.nombre)}"
@@ -611,11 +633,24 @@ async function cargarServicios() {
                          data-online="${(data.ubicacion || "").toLowerCase().includes('online') ? 'true' : 'false'}"
                          data-domicilio="${(data.ubicacion || "").toLowerCase().includes('domicilio') ? 'true' : 'false'}">
 
+                    <div class="card-actions-top">
+                        <button class="btn-icon-card btn-fav-card ${esFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito('${docSnap.id}')" title="Favoritos">
+                            ${esFav ? SVG_HEART_FILLED : SVG_HEART_EMPTY}
+                        </button>
+                        <button class="btn-icon-card btn-share-card" onclick="event.stopPropagation(); compartirAnuncio('${docSnap.id}', '${sanitize(data.nombre).replace(/'/g, "\\'")}', '${sanitize(data.categoria).replace(/'/g, "\\'")}')" title="Compartir">
+                            ${SVG_SHARE}
+                        </button>
+                    </div>
+
                     <div class="categoria-tag">${sanitize(data.categoria)}</div>
-                    <h2>${sanitize(data.nombre)}</h2>
+                    <h2 class="titulo-con-margen">${sanitize(data.nombre)}</h2>
                     <p class="descripcion">${sanitize(data.descripcion)}</p>
                     <div class="info-extra">
                         <span>📍 ${sanitize(data.ubicacion || 'Consultar')}</span>
+                    </div>
+
+                    <div class="card-footer-more">
+                        <span class="ver-mas-texto">➕ Ver más datos</span>
                     </div>
                 </article>
             `;
@@ -627,7 +662,6 @@ async function cargarServicios() {
         
         listaServicios.innerHTML = tarjetaCtaHTML + htmlDestacados + htmlNormales;
 
-        // Deep link: abre el modal directamente si la URL trae ?id=...
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
             const idCompartido = urlParams.get('id');
