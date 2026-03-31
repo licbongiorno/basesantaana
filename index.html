@@ -16,35 +16,22 @@
                 💡<span class="ocultar-movil"> Sugerencias</span>
             </a>
             <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil y administración">👤<span class="ocultar-movil"> Mi Perfil / Favoritos</span></button>
-            <button id="btn-theme-toggle" class="btn-icon" title="Cambiar modo oscuro/claro" aria-label="Alternar tema oscuro y claro">🌙</button>
+            <button id="btn-theme-toggle" class="btn-icon" aria-label="Cambiar modo oscuro">🌙</button>
         </div>
         
-        <div class="header-content">
-            <h1 class="logo-text">Directorio de Servicios</h1>
-            <h2 class="location-text">Villa Parque Santa Ana</h2>
-            <p id="contador-profesionales" class="trust-counter">Cargando comunidad...</p>
-            
-            <div class="search-container">
-                <label for="buscador" class="sr-only" style="display:none;">Buscar servicio</label>
-                <input list="sugerencias-busqueda" id="buscador" placeholder="🔍 ¿Qué experto necesitas hoy? (ej. Plomero, Psicología)">
-                <datalist id="sugerencias-busqueda">
-                    <option value="Psicología"></option>
-                    <option value="Plomería y Gas"></option>
-                    <option value="Electricista"></option>
-                    <option value="Servicio Doméstico"></option>
-                    <option value="Viandas"></option>
-                    <option value="Paseador de Perros"></option>
-                    <option value="Niñera"></option>
-                    <option value="Reparación de Celulares"></option>
-                    <option value="Fletes"></option>
-                </datalist>
-            </div>
+        <h1 class="logo-text">Santa Ana Guía</h1>
+        <p class="location-text">Directorio de Profesionales y Oficios</p>
+        <span id="contador-profesionales" class="trust-counter">Cargando profesionales...</span>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="buscador" placeholder="¿Qué servicio estás buscando? (ej: plomero, profe...)">
+        </div>
 
-            <div class="quick-filters">
-                <button class="filter-btn" data-filter="urgencias">🚨 24hs</button>
-                <button class="filter-btn" data-filter="online">💻 Online</button>
-                <button class="filter-btn" data-filter="domicilio">🏡 A Domicilio</button>
-            </div>
+        <div class="quick-filters">
+            <button class="filter-btn" data-filter="urgencias">🚨 Urgencias 24h</button>
+            <button class="filter-btn" data-filter="online">💻 Atención Online</button>
+            <button class="filter-btn" data-filter="domicilio">🏠 A Domicilio</button>
         </div>
     </header>
 
@@ -52,102 +39,114 @@
         <div id="vista-directorio">
             <div id="lista-servicios" class="grid-servicios">
                 </div>
-            <div id="mensaje-sin-resultados" class="hidden fade-in-up" style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
-                <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem; opacity: 0.8;">🔎</span>
-                <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.3rem;">No encontramos lo que buscás</h3>
-                <p>Probá con otras palabras o quitá los filtros para ver más opciones.</p>
+            <div id="mensaje-sin-resultados" class="hidden" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                <h3>No encontramos servicios con esa búsqueda</h3>
+                <p>Probá usando otras palabras o quitando los filtros.</p>
             </div>
         </div>
 
-        <div id="vista-panel" class="form-container hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem;">
-                <button id="btn-volver-directorio" class="btn-secundario" style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px; color: var(--text-color); font-weight: 500; cursor: pointer;">⬅ Volver al Directorio</button>
-                <button id="btn-logout" class="rounded-button hidden" style="background: #e2e8f0; color: #4a5568; border: none; cursor: pointer; font-size: 0.85rem; padding: 0.5rem 0.8rem;">🔒 Cerrar Sesión</button>
+        <div id="vista-panel" class="hidden form-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.5rem;">Mi Panel</h2>
+                <button id="btn-volver-directorio" class="btn-publicar" style="background: var(--input-bg); color: var(--text-color);">⬅ Volver al Directorio</button>
             </div>
-            
-            <div id="seccion-login" class="tarjeta-servicio centrado professional-card">
-                <h2 style="text-align: center;">Tu cuenta en Santa Ana</h2>
-                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem; text-align: center;">Iniciá sesión con Google para publicar tus servicios o guardar a tus profesionales favoritos.</p>
-                <button id="btn-login" class="btn-whatsapp rounded-button" style="background-color: #4285F4; margin-top:1.5rem;">Continuar con Google</button>
+
+            <div id="seccion-login" class="centrado" style="padding: 2rem 0;">
+                <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Iniciá sesión para publicar tu servicio gratis o ver tus favoritos.</p>
+                <button id="btn-login" class="rounded-button" style="background: white; color: #333; border: 1px solid #ccc; display: inline-flex; align-items: center; justify-content: center; gap: 10px; max-width: 300px; margin: 0 auto;">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width: 20px;">
+                    Continuar con Google
+                </button>
             </div>
 
             <div id="seccion-dashboard" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <p>Bienvenido. Aquí puedes gestionar tu información.</p>
+                    <button id="btn-logout" class="btn-publicar" style="background: #fee2e2; color: #dc2626;">Cerrar Sesión</button>
+                </div>
+
                 <div class="dashboard-tabs">
                     <button id="tab-mis-anuncios" class="tab-btn active">Mis Anuncios</button>
-                    <button id="tab-mis-favoritos" class="tab-btn">❤️ Favoritos</button>
+                    <button id="tab-mis-favoritos" class="tab-btn">Mis Favoritos ❤️</button>
                 </div>
 
                 <div id="contenido-mis-anuncios">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h2 style="font-size: 1.2rem;">Servicios Publicados</h2>
-                        <button id="btn-crear-nuevo" class="btn-social btn-fb rounded-button" style="border:none; cursor:pointer; padding: 0.5rem 1rem;">+ Nuevo</button>
-                    </div>
+                    <button id="btn-crear-nuevo" class="rounded-button" style="background: var(--primary-color); color: white; margin-bottom: 1.5rem;">+ Publicar Nuevo Servicio</button>
                     <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
                 </div>
 
                 <div id="contenido-mis-favoritos" class="hidden">
-                    <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Profesionales Guardados</h2>
                     <div id="lista-mis-favoritos" style="display: flex; flex-direction: column; gap: 1rem;"></div>
                 </div>
             </div>
 
-            <div id="seccion-formulario" class="tarjeta-servicio professional-card fade-in-up hidden">
-                <h2 id="titulo-formulario">Datos del Servicio</h2>
-                <form id="form-servicio" class="formulario-estilizado">
-                    <div class="grupo-input">
-                        <label for="nombre">Nombre del Negocio o Profesional *</label>
-                        <input type="text" id="nombre" required placeholder="Ej. Bongiorno Nicolas - Psicología">
-                    </div>
-                    <div class="grupo-input">
-                        <label for="categoria">Categoría Principal *</label>
-                        <select id="categoria" required>
-                            <option value="">Selecciona un rubro...</option>
-                            <option value="Salud Mental y Psicología">Salud Mental y Psicología</option>
-                            <option value="Salud y Médicos">Salud y Médicos</option>
-                            <option value="Servicio Doméstico y Limpieza">Servicio Doméstico y Limpieza</option>
-                            <option value="Cuidado de Personas">Cuidado de Personas (Niñeras, Acompañantes)</option>
-                            <option value="Gastronomía y Viandas">Gastronomía y Viandas</option>
-                            <option value="Tecnología y Reparación">Tecnología y Reparación</option>
-                            <option value="Construcción y Albañilería">Construcción y Albañilería</option>
-                            <option value="Electricidad y Plomería">Electricidad y Plomería</option>
-                            <option value="Educación y Clases">Educación y Clases</option>
-                            <option value="Fletes y Logística">Fletes y Logística</option>
-                            <option value="Otros">Otros Servicios</option>
-                        </select>
-                    </div>
-                    <div class="grupo-input">
-                        <label for="ubicacion">Modalidad de Atención *</label>
-                        <select id="ubicacion" required>
-                            <option value="100% Online (Virtual)">100% Online (Virtual / Videollamada)</option>
-                            <option value="Presencial y Online">Presencial y Online</option>
-                            <option value="En mi local/consultorio">En mi local / consultorio</option>
-                            <option value="A domicilio">Voy a domicilio</option>
-                            <option value="Ambas (A domicilio y en local)">Ambas (A domicilio y local)</option>
-                        </select>
-                    </div>
-                    <div class="grupo-input">
-                        <label for="whatsapp">WhatsApp de Contacto (Solo números) *</label>
-                        <input type="tel" id="whatsapp" pattern="[0-9]*" required placeholder="Ej. 3516575261">
-                    </div>
-                    <div class="grupo-input responsive-row">
-                        <div style="flex: 1;">
-                            <label for="instagram" style="color:#e1306c;">Instagram (Opcional)</label>
-                            <input type="text" id="instagram" placeholder="Ej. tu_usuario">
+            <div id="seccion-formulario" class="hidden">
+                <h3 id="titulo-formulario" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Nuevo Servicio</h3>
+                <form id="form-servicio">
+                    <div class="responsive-row">
+                        <div class="grupo-input" style="flex: 1;">
+                            <label for="nombre">Nombre o Empresa *</label>
+                            <input type="text" id="nombre" required placeholder="Ej: Juan Pérez o Electricidad Sur">
                         </div>
-                        <div style="flex: 1;">
-                            <label for="facebook" style="color:#1877f2;">Facebook (Opcional)</label>
-                            <input type="text" id="facebook" placeholder="Ej. enlace_perfil">
+                        <div class="grupo-input" style="flex: 1;">
+                            <label for="categoria">Categoría *</label>
+                            <select id="categoria" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Albañilería y Construcción">Albañilería y Construcción</option>
+                                <option value="Belleza y Cuidado Personal">Belleza y Cuidado Personal</option>
+                                <option value="Carpintería">Carpintería</option>
+                                <option value="Clases Particulares">Clases Particulares</option>
+                                <option value="Cuidado de Personas">Cuidado de Personas</option>
+                                <option value="Electricidad">Electricidad</option>
+                                <option value="Eventos y Fiestas">Eventos y Fiestas</option>
+                                <option value="Fletes y Mudanzas">Fletes y Mudanzas</option>
+                                <option value="Gastronomía">Gastronomía</option>
+                                <option value="Herrería">Herrería</option>
+                                <option value="Jardinería y Poda">Jardinería y Poda</option> <option value="Limpieza">Limpieza</option>
+                                <option value="Mascotas y Veterinaria">Mascotas y Veterinaria</option>
+                                <option value="Mecánica y Talleres">Mecánica y Talleres</option>
+                                <option value="Plomería y Gas">Plomería y Gas</option>
+                                <option value="Refrigeración (Aires/Heladeras)">Refrigeración (Aires/Heladeras)</option>
+                                <option value="Salud y Bienestar">Salud y Bienestar</option>
+                                <option value="Servicios Profesionales">Servicios Profesionales (Abogados, Contadores)</option>
+                                <option value="Tecnología y PC">Tecnología y PC</option>
+                                <option value="Transporte (Taxis/Remis)">Transporte (Taxis/Remis)</option>
+                                <option value="Otros">Otros</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="grupo-input triggers-group">
-                        <label>Gatillos (Destaca tu anuncio)</label>
-                        <div class="check-input"><input type="checkbox" id="urgencias"> <label for="urgencias" style="cursor:pointer;">🚨 Atiendo Urgencias 24hs</label></div>
-                        <div class="check-input"><input type="checkbox" id="presupuesto"> <label for="presupuesto" style="cursor:pointer;">💡 Presupuesto sin cargo</label></div>
+
+                    <div class="grupo-input">
+                        <label for="ubicacion">Modalidad / Zona de cobertura *</label>
+                        <input type="text" id="ubicacion" required placeholder="Ej: A domicilio, Online, Consultorio en Alta Gracia...">
                     </div>
+
+                    <h4 style="margin: 1.5rem 0 1rem 0; color: var(--text-color);">Contacto y Redes</h4>
+                    <div class="responsive-row">
+                        <div class="grupo-input" style="flex: 1;">
+                            <label for="whatsapp">WhatsApp * (Sólo números)</label>
+                            <input type="number" id="whatsapp" required placeholder="Ej: 3511234567">
+                        </div>
+                        <div class="grupo-input" style="flex: 1;">
+                            <label for="instagram">Instagram (Opcional)</label>
+                            <input type="text" id="instagram" placeholder="Ej: @tu_usuario">
+                        </div>
+                        <div class="grupo-input" style="flex: 1;">
+                            <label for="facebook">Facebook (Opcional)</label>
+                            <input type="text" id="facebook" placeholder="Ej: facebook.com/tu_pagina">
+                        </div>
+                    </div>
+
+                    <div class="responsive-row" style="margin-bottom: 1rem;">
+                        <div class="check-input"><input type="checkbox" id="urgencias"> <label for="urgencias" style="margin:0; cursor:pointer;">🚨 Atiendo urgencias 24h</label></div>
+                        <div class="check-input"><input type="checkbox" id="presupuesto"> <label for="presupuesto" style="margin:0; cursor:pointer;">💡 Presupuesto sin cargo</label></div>
+                    </div>
+
                     <div class="grupo-input description-group">
                         <label for="descripcion">Breve Descripción *</label>
                         <textarea id="descripcion" rows="4" required placeholder="Describe qué ofreces detalladamente."></textarea>
                     </div>
+
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;" class="form-actions">
                         <button type="submit" id="btn-guardar" class="btn-whatsapp rounded-button pulse-subtle" style="flex: 2;">Guardar Servicio</button>
                         <button type="button" id="btn-cancelar" class="rounded-button" style="flex: 1; background: var(--input-bg); border:1px solid var(--border-color); color:var(--text-color); cursor:pointer;">Cancelar</button>
