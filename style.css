@@ -1,7 +1,7 @@
 :root { 
     --bg-color: #f0f4f8; 
     --text-color: #1a202c; 
-    --text-muted: #4a5568; 
+    --text-muted: #2d3748; 
     --card-bg: #ffffff;
     --primary-color: #0277bd; 
     --header-grad: linear-gradient(135deg, rgba(2, 119, 189, 0.9) 0%, rgba(3, 155, 229, 0.9) 100%);
@@ -65,11 +65,15 @@ body.modal-open { overflow: hidden; }
 .filter-btn:hover { background: rgba(255,255,255,0.25); }
 .filter-btn.active { background: white; color: var(--primary-color); border-color: white; font-weight: 600; }
 
+.categorias-nav { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; max-width: 800px; margin-left: auto; margin-right: auto; }
+.cat-pill { text-decoration: none; color: white; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 15px; background: rgba(0,0,0,0.2); backdrop-filter: blur(5px); transition: 0.2s; border: 1px solid transparent; }
+.cat-pill:hover { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.5); transform: translateY(-2px); }
+
 .search-container { position: relative; max-width: 600px; margin: 0 auto; transition: all 0.3s ease; background: var(--card-bg); border-radius: 30px; padding: 2px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); }
 .search-container.sticky-search { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; z-index: 101; box-shadow: var(--shadow-lg); border-radius: 25px; }
 .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; pointer-events: none; }
 #buscador { width: 100%; padding: 14px 20px 14px 45px; border-radius: 25px; border: none; font-size: 1rem; outline: none; transition: 0.3s; background: transparent; color: var(--text-color); }
-body.modo-formulario .search-container, body.modo-formulario .quick-filters, body.modo-formulario .trust-counter { display: none !important; }
+body.modo-formulario .search-container, body.modo-formulario .quick-filters, body.modo-formulario .trust-counter, body.modo-formulario .categorias-nav { display: none !important; }
 
 .btn-icon { background: rgba(255,255,255,0.2); border: none; font-size: 1.2rem; cursor: pointer; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 .btn-publicar { background-color: transparent; border: 1px solid rgba(255,255,255,0.4); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500; cursor: pointer; font-size: 0.9rem; backdrop-filter: blur(5px); transition: all 0.2s; }
@@ -98,7 +102,7 @@ body.modo-formulario .search-container, body.modo-formulario .quick-filters, bod
 .descripcion { color: var(--text-muted); font-size: 0.95rem; line-height: var(--line-height-relaxed); margin-bottom: 1rem; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
 .info-extra { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; color: var(--text-muted); padding-top: 1rem; border-top: 1px solid var(--border-color); }
 
-.card-actions-top { position: absolute; top: 1.2rem; right: 1.2rem; display: flex; gap: 6px; z-index: 2; }
+.card-actions-top { position: absolute; top: 1.2rem; right: 1.2rem; display: flex; gap: 6px; z-index: 10; }
 .btn-icon-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s ease; color: var(--text-muted); }
 .btn-icon-card:hover { transform: scale(1.05); background: var(--input-bg); }
 .btn-fav-card.active { color: #ef4444; border-color: #fca5a5; background: #fef2f2; }
@@ -134,18 +138,27 @@ body.modo-formulario .search-container, body.modo-formulario .quick-filters, bod
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(4px); }
 .modal-overlay.active { opacity: 1; visibility: visible; }
-.modal-content { background: var(--bg-color); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 2rem; position: relative; transform: translateY(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
+.modal-content { background: var(--bg-color); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 2rem; position: relative; transform: translateY(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
 .modal-overlay.active .modal-content { transform: translateY(0); }
 @media (min-width: 768px) { .modal-overlay { align-items: center; } .modal-content { border-radius: 24px; transform: scale(0.95); opacity: 0; } .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; } }
 
-/* DISEÑO DE LA "X" EN EL MODAL */
+#modal-body { overflow-y: auto; height: 100%; padding-bottom: 90px; }
+
 .btn-close { position: absolute; top: 1rem; right: 1rem; background: rgba(0, 0, 0, 0.05); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color); transition: all 0.2s ease; z-index: 10; }
 .btn-close:hover { background: #fee2e2; color: #dc2626; transform: rotate(90deg); }
+
+.btn-wa-flotante-modal { position: absolute; bottom: 1.5rem; right: 1.5rem; width: 60px; height: 60px; background-color: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); z-index: 1000; transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; }
+.btn-wa-flotante-modal:hover { transform: scale(1.1); background-color: #20bd5a; box-shadow: 0 6px 16px rgba(37, 211, 102, 0.5); }
 
 .modal-actions-row { display: flex; gap: 0.8rem; margin-top: 1rem; margin-bottom: 0.5rem; }
 .btn-modal-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem; border-radius: 12px; font-weight: 600; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease; -webkit-tap-highlight-color: transparent; }
 .btn-modal-action:hover { background: var(--border-color); color: var(--text-color); }
 .btn-share:hover { color: var(--primary-color); border-color: var(--primary-color); background: rgba(2, 119, 189, 0.05); }
+
+#confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; place-items: center; z-index: 9999; backdrop-filter: blur(3px); }
+#confirm-overlay.active { display: grid; }
+.confirm-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; max-width: 350px; width: 90%; box-shadow: var(--shadow-lg); animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
 .skeleton { height: 200px; background: linear-gradient(90deg, var(--input-bg) 25%, var(--border-color) 50%, var(--input-bg) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 16px; margin-bottom: 1.5rem; }
 @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
@@ -159,4 +172,4 @@ body.modo-formulario .search-container, body.modo-formulario .quick-filters, bod
 .footer { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.9rem; margin-top: auto; border-top: 1px solid var(--border-color); }
 
 @media (max-width: 768px) { .responsive-row { flex-direction: column; gap: 0; } }
-@media (max-width: 600px) { .ocultar-movil { display: none; } .logo-text { font-size: 1.8rem; } .header-top { justify-content: space-between; } .btn-publicar { flex: 1; text-align: center; } .redes-sociales { flex-direction: column; } }
+@media (max-width: 600px) { .ocultar-movil { display: none; } .logo-text { font-size: 1.8rem; } .header-top { justify-content: space-between; } .btn-publicar { flex: 1; text-align: center; } .redes-sociales { flex-direction: column; } .btn-wa-flotante-modal { bottom: 1rem; right: 1rem; } }
