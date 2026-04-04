@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, setDoc, enableIndexedDbPersistence, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB989b4dx4ao6So14IWRQwwZ0JybGVMFGQ",
@@ -13,18 +13,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 // ==========================================
-// CACHÉ OFFLINE (IndexedDB)
+// CONFIGURACIÓN Y CACHÉ OFFLINE (Modo v10+)
 // ==========================================
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn('Múltiples pestañas abiertas, caché deshabilitado.');
-    } else if (err.code == 'unimplemented') {
-        console.warn('El navegador no soporta caché offline.');
-    }
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
 
 // ==========================================
@@ -598,7 +593,6 @@ window.abrirModal = function(id) {
     const docRef = doc(db, "servicios", id);
     updateDoc(docRef, { vistas: increment(1) }).catch(() => {});
 
-    // FIX 1: title y meta description crudos para evitar entidades HTML extrañas en SEO
     document.title = `${data.nombre} - ${data.categoria} en Santa Ana`;
     history.pushState(null, null, `?id=${id}`);
     inyectarSchemaGoogle(data);
@@ -610,7 +604,6 @@ window.abrirModal = function(id) {
 
     const waNumero = formatearWhatsapp(data.whatsapp);
     
-    // FIX 2: Propiedad real para el destacado (evita hardcodeos)
     const esDestacado = data.destacado === true; 
     
     const mensajeWA = encodeURIComponent(`Hola ${data.nombre}, vi tu anuncio de ${data.categoria} en el Directorio de Santa Ana. Quería hacerte una consulta...`);
@@ -744,7 +737,6 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
-
 
 // ==========================================
 // DELEGACIÓN DE EVENTOS CENTRALIZADA
@@ -913,7 +905,6 @@ async function cargarServicios() {
             
             datosParaEstado.push(data);
             
-            // FIX 2B: Propiedad real para las tarjetas del feed principal
             const esDestacado = data.destacado === true;
             
             const esFav = favsGuardados.includes(docSnap.id);
