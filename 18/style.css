@@ -180,10 +180,12 @@ body.modal-open { overflow: hidden; }
 #splash-screen {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #0277bd 0%, #039be5 100%);
+    background: linear-gradient(160deg, #e0f4ff 0%, #b3e0f7 50%, #cceeff 100%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1.8rem;
     z-index: 99999;
     opacity: 1;
     visibility: visible;
@@ -197,9 +199,23 @@ body.modal-open { overflow: hidden; }
 .splash-logo {
     width: min(260px, 68vw);
     height: auto;
-    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 6px 18px rgba(2, 119, 189, 0.2));
     animation: splashPulse 1.8s ease-in-out infinite;
     will-change: transform, opacity;
+}
+.splash-texto {
+    color: #0277bd;
+    font-size: clamp(0.95rem, 3.5vw, 1.15rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-align: center;
+    opacity: 0.85;
+    padding: 0 1.5rem;
+    animation: splashTextFade 1.8s ease-in-out infinite;
+}
+@keyframes splashTextFade {
+    0%, 100% { opacity: 0.85; }
+    50%       { opacity: 0.55; }
 }
 @keyframes splashPulse {
     0%, 100% { transform: scale(1);    opacity: 1;    }
