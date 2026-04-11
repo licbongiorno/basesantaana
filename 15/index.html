@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="description" content="Guía de profesionales y oficios en Villa Parque Santa Ana. Buscá plomeros, electricistas y servicios locales con contacto directo por WhatsApp.">
+    <meta name="keywords" content="Santa Ana Guía, Profesionales Santa Ana, Villa Parque Santa Ana, Córdoba, Plomeros, Electricistas, Psicólogos">
+    
+    <meta name="google-site-verification" content="N97TKNZ8G7J_BsIUTDLkNrQrRglSn8sE67_heHH0I4k" />
+
+  <link rel="canonical" href="https://basesantaana.vercel.app/">
+    <meta property="og:url" content="https://basesantaana.vercel.app/">
+    <meta property="og:image" content="https://basesantaana.vercel.app/og-image.jpg">
+    <meta property="og:title" content="Santa Ana Guía · Directorio de Profesionales">
+    <meta property="og:description" content="Encontrá servicios de confianza en Villa Parque Santa Ana.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content=""https://basesantaana.vercel.app/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <script type="application/ld+json" id="schema-json"></script>
+
+    <title>Santa Ana Guía - Directorio de Servicios Locales</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="header" id="main-header">
+        <div class="header-top">
+            <a href="https://wa.me/5493516575261?text=Hola,%20tengo%20una%20sugerencia%20para%20el%20directorio" target="_blank" rel="noopener noreferrer" class="btn-sugerencias-header" title="Sugerencias" aria-label="WhatsApp de sugerencias">
+                💡<span class="ocultar-movil"> Sugerencias</span>
+            </a>
+            <button id="btn-publicar" class="btn-publicar" aria-label="Mi perfil">👤<span class="ocultar-movil"> Mi Perfil / Favoritos</span></button>
+            <button id="btn-theme-toggle" class="btn-icon" aria-label="Cambiar modo">🌙</button>
+        </div>
+        
+        <h1 class="logo-text">Santa Ana Guía</h1>
+        <p class="location-text">Villa Parque Santa Ana, Córdoba</p>
+        
+        <span id="contador-profesionales" class="trust-counter" aria-live="polite">Conectando con el barrio...</span>
+        
+        <div class="search-container" role="search">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="buscador" placeholder="¿Qué servicio necesitás? (ej: plomero)" aria-label="Buscar servicio">
+        </div>
+
+        <div class="quick-filters" role="group" aria-label="Filtros rápidos">
+            <button class="filter-btn" data-filter="urgencias">🚨 Urgencias</button>
+            <button class="filter-btn" data-filter="online">💻 Online</button>
+            <button class="filter-btn" data-filter="domicilio">🏠 A Domicilio</button>
+        </div>
+
+        <nav class="categorias-nav" aria-label="Categorías populares">
+            <a href="?categoria=Plomería y Gas" class="cat-pill">🔧 Plomería</a>
+            <a href="?categoria=Electricidad" class="cat-pill">⚡ Electricidad</a>
+            <a href="?categoria=Salud y Bienestar" class="cat-pill">🏥 Salud</a>
+            <a href="?categoria=Clases Particulares" class="cat-pill">📚 Clases</a>
+            <a href="?categoria=Limpieza" class="cat-pill">🧹 Limpieza</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div id="vista-directorio">
+            <div id="lista-servicios" class="grid-servicios">
+                </div>
+            
+            <div id="mensaje-sin-resultados" class="hidden" role="status" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">🧐 <strong>¡Ups! No hay nadie registrado con esa búsqueda todavía.</strong></p>
+                <p>Si conocés a alguien, ¡avisale que puede sumarse gratis en 2 minutos!</p>
+            </div>
+        </div>
+
+        <div id="vista-panel" class="hidden form-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.5rem;">Mi Perfil</h2>
+                <button id="btn-volver-directorio" class="btn-publicar" style="background: var(--input-bg); color: var(--text-color); border-color: var(--border-color);">⬅ Volver</button>
+            </div>
+
+            <div id="seccion-login" class="centrado" style="padding: 2rem 0;">
+                <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Iniciá sesión para publicar tu servicio o ver tus favoritos.</p>
+                <button id="btn-login" class="rounded-button" style="background: white; color: #333; border: 1px solid #ccc; display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto;">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width: 20px;">
+                    Continuar con Google
+                </button>
+            </div>
+
+            <div id="seccion-dashboard" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <p style="color: var(--text-muted);">Gestioná tu información.</p>
+                    <button id="btn-logout" class="btn-publicar" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5;">Cerrar Sesión</button>
+                </div>
+
+                <div class="dashboard-tabs">
+                    <button id="tab-mis-anuncios" class="tab-btn active">Mis Anuncios</button>
+                    <button id="tab-mis-favoritos" class="tab-btn">Favoritos ❤️</button>
+                </div>
+
+                <div id="contenido-mis-anuncios">
+                    <button id="btn-crear-nuevo" class="rounded-button" style="background: var(--primary-color); color: white; margin-bottom: 1.5rem;">+ Publicar Nuevo</button>
+                    <div id="lista-mis-servicios" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+
+                <div id="contenido-mis-favoritos" class="hidden">
+                    <div id="lista-mis-favoritos" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+            </div>
+
+            <div id="seccion-formulario" class="hidden">
+                <h3 id="titulo-formulario" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Nuevo Servicio</h3>
+                <form id="form-servicio">
+                    <div class="responsive-row">
+                        <div class="grupo-input" style="flex: 1;"><label for="nombre">Nombre / Empresa *</label><input type="text" id="nombre" required></div>
+                        <div class="grupo-input" style="flex: 1;"><label for="categoria">Categoría *</label>
+                            <select id="categoria" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Albañilería y Construcción">Albañilería y Construcción</option>
+                                <option value="Belleza y Cuidado Personal">Belleza y Cuidado Personal</option>
+                                <option value="Carpintería">Carpintería</option>
+                                <option value="Clases Particulares">Clases Particulares</option>
+                                <option value="Cuidado de Personas">Cuidado de Personas</option>
+                                <option value="Electricidad">Electricidad</option>
+                                <option value="Eventos y Fiestas">Eventos y Fiestas</option>
+                                <option value="Fletes y Mudanzas">Fletes y Mudanzas</option>
+                                <option value="Gastronomía">Gastronomía</option>
+                                <option value="Herrería">Herrería</option>
+                                <option value="Jardinería y Poda">Jardinería y Poda</option>
+                                <option value="Limpieza">Limpieza</option>
+                                <option value="Mascotas y Veterinaria">Mascotas y Veterinaria</option>
+                                <option value="Mecánica y Talleres">Mecánica y Talleres</option>
+                                <option value="Plomería y Gas">Plomería y Gas</option>
+                                <option value="Refrigeración (Aires/Heladeras)">Refrigeración (Aires/Heladeras)</option>
+                                <option value="Salud y Bienestar">Salud y Bienestar</option>
+                                <option value="Servicios Profesionales">Servicios Profesionales</option>
+                                <option value="Tecnología y PC">Tecnología y PC</option>
+                                <option value="Transporte (Taxis/Remis)">Transporte (Taxis/Remis)</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grupo-input"><label for="ubicacion">Ubicación / Modalidad *</label><input type="text" id="ubicacion" required placeholder="Ej: A domicilio, Consultorio..."></div>
+                    <div class="responsive-row">
+                        <div class="grupo-input" style="flex: 1;"><label for="whatsapp">WhatsApp * (Sin espacios, ej: 351...)</label><input type="number" id="whatsapp" required></div>
+                        <div class="grupo-input" style="flex: 1;"><label for="instagram">Instagram</label><input type="text" id="instagram"></div>
+                        <div class="grupo-input" style="flex: 1;"><label for="facebook">Facebook</label><input type="text" id="facebook"></div>
+                    </div>
+                    <div class="check-input" style="margin-bottom: 0.5rem;">
+                        <input type="checkbox" id="urgencias"> <label for="urgencias" style="margin:0; cursor:pointer;">🚨 Atiendo Urgencias 24h</label>
+                    </div>
+                    <div class="check-input">
+                        <input type="checkbox" id="presupuesto"> <label for="presupuesto" style="margin:0; cursor:pointer;">💡 Presupuesto sin cargo</label>
+                    </div>
+                    <div class="grupo-input description-group" style="margin-top: 1rem;">
+                        <label for="descripcion">Descripción (Máx 400 caracteres) *</label>
+                        <textarea id="descripcion" rows="4" maxlength="400" required></textarea>
+                    </div>
+                    <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button type="submit" id="btn-guardar" class="btn-whatsapp rounded-button" style="flex: 2;">Guardar Servicio</button>
+                        <button type="button" id="btn-cancelar" class="rounded-button" style="flex: 1; background: var(--input-bg); border:1px solid var(--border-color); color:var(--text-color); cursor:pointer;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-perfil" class="modal-overlay hidden" aria-modal="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <h2 id="modal-title" style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); border: 0;">Detalles del profesional</h2>
+            <button id="btn-cerrar-modal" class="btn-close" aria-label="Cerrar ventana">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="confirm-overlay" aria-hidden="true">
+        <div class="confirm-box">
+            <p id="confirm-msg" style="font-weight: 500; font-size: 1.05rem; margin-bottom: 0.5rem;"></p>
+            <div style="display:flex; gap:0.8rem; justify-content:flex-end; margin-top:1.5rem;">
+                <button id="confirm-cancel" class="rounded-button" style="padding: 8px 16px; font-size: 0.9rem; background:var(--input-bg);border:1px solid var(--border-color);color:var(--text-color);">Cancelar</button>
+                <button id="confirm-ok" class="rounded-button" style="padding: 8px 16px; font-size: 0.9rem; background:#dc2626;color:white;border:none;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Hecho con ❤️ para el barrio por <strong>Psicologo Lic Nico Bongiorno</strong></p>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
