@@ -2,6 +2,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// ==========================================
+// SPLASH SCREEN — fade-out a los 2.5s
+// ==========================================
+(function initSplash() {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) return;
+    setTimeout(() => {
+        splash.classList.add('fade-out');
+        // Quitar del DOM tras la transición para no bloquear nada
+        splash.addEventListener('transitionend', () => splash.remove(), { once: true });
+    }, 2500);
+})();
+
 const firebaseConfig = {
   apiKey: "AIzaSyB989b4dx4ao6So14IWRQwwZ0JybGVMFGQ",
   authDomain: "directorio-santa-ana.firebaseapp.com",
@@ -976,6 +989,7 @@ async function cargarServicios() {
         tarjetasDestacadas.forEach(tarjeta => fragmentoPrincipal.appendChild(tarjeta));
         tarjetasNormales.forEach(tarjeta => fragmentoPrincipal.appendChild(tarjeta));
 
+        listaServicios.innerHTML = ''; // limpia skeletons iniciales
         listaServicios.appendChild(fragmentoPrincipal);
         
         serviciosCargados = true; 
